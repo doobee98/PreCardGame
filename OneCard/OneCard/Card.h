@@ -14,6 +14,8 @@ class Card {
 
 public:
 	Card(Trump t, int num);
+	Trump GetTrump() const;
+	int GetNumber() const;
 	void Use(Field& f) const;
 	bool CanUse(const Field& f) const;
 	bool IsAtkCard() const;
@@ -22,9 +24,19 @@ private:
 	bool CheckValid() const;
 	Attack InitializeAtk(int num) const;
 
+public:
 	friend ostream& operator<<(ostream& os, const Card& c);
+	bool operator<(const Card& other) const;
 };
 
+bool compare(Card* c1, Card* c2) { // 포인터형 비교
+	if (c1->GetTrump() < c2->GetTrump())
+		return true;
+	else if (c1->GetTrump() > c2->GetTrump())
+		return false;
+	else
+		return c1->GetNumber() < c2->GetNumber();
+}
 
 
 
@@ -33,6 +45,10 @@ Card::Card(Trump t, int num) : t(t), number(num), atk_value(InitializeAtk(num)) 
 	if (CheckValid() == false)
 		throw "Card / CheckValid: Invalid Card Pattern";
 }
+
+
+Trump Card::GetTrump() const { return t; }
+int Card::GetNumber() const { return number; }
 
 
 void Card::Use(Field& f) const {
@@ -128,4 +144,13 @@ ostream& operator<<(ostream& os, const Card& c) {
 		throw "Card / operator<< : Trump = MAX";
 	}
 	return os;
+}
+
+bool Card::operator<(const Card& other) const {
+	if (t < other.GetTrump())
+		return true;
+	else if (t > other.GetTrump())
+		return false;
+	else 
+		return number < other.GetNumber();
 }

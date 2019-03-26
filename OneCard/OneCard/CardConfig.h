@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-enum class Trump {
+enum Trump {
 	JOKER, HEART, DIAMOND, SPADE, CLOVER, MAX
 };
 

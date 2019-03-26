@@ -13,6 +13,7 @@ public:
 	void SetLeadSuit(Trump t);
 	int GetLeadNumber() const;
 	void SetLeadNumber(int num);
+	int GetAtkStack() const;
 	void ResetAtkStack();
 	void AddAtkStack(Attack num);
 	bool IsAttacking() const;
@@ -39,6 +40,7 @@ void Field::SetLeadNumber(int num) {
 }
 
 
+int Field::GetAtkStack() const { return atk_stack; }
 void Field::AddAtkStack(Attack num) {
 	atk_stack += static_cast<int>(num);
 }

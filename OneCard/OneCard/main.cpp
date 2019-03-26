@@ -1,16 +1,16 @@
 #include <iostream>
-#include "Card.h"
+#include "Player.h"
 using namespace std;
 
 int main(void) {
 	cout << "Project Onecard" << endl;
-	
-	Card c1(Trump::CLOVER, 4);
-	Card c2(Trump::HEART, J);
-	Card c3(Trump::JOKER, JOKER_NUM);
 
-	cout << c1 << endl;
-	cout << c2 << endl;
-	cout << c3 << endl;
+	srand((unsigned int)time(NULL));
 	
+	Field f;
+	f.AddAtkStack(Attack::JOKER);
+	Deck d;
+	Player p1("ÀÌµÎ¼·", d);
+	p1.Draw(f);
+	p1.TestViewHand();
 }

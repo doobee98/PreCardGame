@@ -29,9 +29,6 @@
     <ClInclude Include="Deck.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Hand.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Field.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>

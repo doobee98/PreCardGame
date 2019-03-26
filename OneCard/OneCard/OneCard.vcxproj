@@ -126,7 +126,6 @@
     <ClInclude Include="ConsoleConfig.h" />
     <ClInclude Include="Deck.h" />
     <ClInclude Include="Field.h" />
-    <ClInclude Include="Hand.h" />
     <ClInclude Include="Player.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
