@@ -1,0 +1,131 @@
+#pragma once
+#include <iostream>
+#include <string>
+#include "CardConfig.h"
+#include "ConsoleConfig.h"
+#include "Field.h"
+using namespace std;
+
+
+class Card {
+	const Trump t;
+	const int number;
+	const Attack atk_value;
+
+public:
+	Card(Trump t, int num);
+	void Use(Field& f) const;
+	bool CanUse(const Field& f) const;
+	bool IsAtkCard() const;
+
+private:
+	bool CheckValid() const;
+	Attack InitializeAtk(int num) const;
+
+	friend ostream& operator<<(ostream& os, const Card& c);
+};
+
+
+
+
+Card::Card(Trump t, int num) : t(t), number(num), atk_value(InitializeAtk(num)) {
+	// 객체 초기화시 trump와 value가 valid한 조합인지 체크함
+	if (CheckValid() == false)
+		throw "Card / CheckValid: Invalid Card Pattern";
+}
+
+
+void Card::Use(Field& f) const {
+	// Field의 리드수트, 리드넘버를 바꾸고, 공격카드면 공격 스택을 추가함
+	f.SetLeadSuit(t);
+	f.SetLeadNumber(number);
+	if (IsAtkCard())
+		f.AddAtkStack(atk_value);
+	// 7, K, Q, J 처리
+}
+
+
+bool Card::CanUse(const Field& f) const{
+	if (f.IsAttacking() == true && IsAtkCard() == false) 
+		return false;
+	
+
+	if (f.GetLeadSuit() == Trump::JOKER || t == Trump::JOKER)
+		return true;
+	else
+		return f.GetLeadSuit() == t || f.GetLeadNumber() == number;
+}
+
+
+bool Card::IsAtkCard() const {
+	return atk_value != Attack::UNDEFINED;
+}
+
+
+bool Card::CheckValid() const {
+	switch (t) {
+	case Trump::JOKER:
+		if (number != JOKER_NUM) return false;
+		break;
+	case Trump::MAX: return false;
+	default: // 4 Pattern trump
+		if (number < A || number > K) return false;
+		break;
+	}
+
+	return true;
+}
+
+
+Attack Card::InitializeAtk(int num) const {
+	switch (num) {
+	case A: 
+		return Attack::ACE;
+	case 2: 
+		return Attack::TWO;
+	case JOKER_NUM:
+		return Attack::JOKER;
+	default:
+		return Attack::UNDEFINED;
+	}
+}
+
+
+ostream& operator<<(ostream& os, const Card& c) {
+	switch (c.t){
+	case Trump::JOKER:
+		SETCOLOR(YELLOW);
+		os << "JOKER";
+		SETCOLOR();
+		break;
+	case Trump::HEART: case Trump::DIAMOND:
+		SETCOLOR(LIGHTRED);
+		os << PRINT_TRUMP(c.t) << " ";
+		os.width(2); os.fill(' ');
+		switch (c.number) {
+		case A: os << "A"; break;
+		case J: os << "J"; break;
+		case Q: os << "Q"; break;
+		case K: os << "K"; break;
+		default: os << c.number; break;
+		}
+		SETCOLOR();
+		break;
+	case Trump::CLOVER: case Trump::SPADE:
+		SETCOLOR(DARKGRAY);
+		os << PRINT_TRUMP(c.t) << " ";
+		os.width(2); os.fill(' ');
+		switch (c.number) {
+		case A: os << "A"; break;
+		case J: os << "J"; break;
+		case Q: os << "Q"; break;
+		case K: os << "K"; break;
+		default: os << c.number; break;
+		}
+		SETCOLOR();
+		break;
+	default:
+		throw "Card / operator<< : Trump = MAX";
+	}
+	return os;
+}

@@ -1,1 +1,3 @@
-﻿  OneCard.vcxproj -> C:\Users\sec\Desktop\Github\PreCardGame\OneCard\Debug\OneCard.exe
+﻿  main.cpp
+c:\users\sec\desktop\github\precardgame\onecard\onecard\consoleconfig.h(11): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
+  OneCard.vcxproj -> C:\Users\sec\Desktop\Github\PreCardGame\OneCard\Debug\OneCard.exe
