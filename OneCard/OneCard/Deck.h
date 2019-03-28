@@ -1,57 +1,47 @@
 #pragma once
 #include <deque>
+#include <stack>
+#include <algorithm>
+/*
 #include <cstdlib>
 #include <ctime>
+*/
 #include "Card.h"
+#include "CardFactory.h"
+#include "IGetStack.h"
 
 
 class Deck {
 private:
-	Card** card_ptr; // 소멸 담당 리스트
-	int card_ptr_size;
-
+	CardFactory& fac;
 	deque<Card*> card_deck;
-	deque<Card*> card_used;
-	Card* recent_card;
+	IGetStack& ref_field;
+
 public:
-	Deck();
-	~Deck();
+	Deck(IGetStack& ref_field);
 	Card* DrawTop();
-	void AddUsed(Card* c);
-	Card* GetRecentCard() const;
-	void Shuffle();
-	void TestView();
+	void TestViewDeck();
 
 private:
+	void Shuffle();
 	void RandomizeDeck();
 };
 
 
 
 
-Deck::Deck() {
-	card_ptr = new Card*[54];
-	card_ptr_size = 0;
+Deck::Deck(IGetStack& ref_field) : fac(CardFactory::GetInstance()), ref_field(ref_field) {
 
-	for (int i = 0; i < 2; i++) { // JOKER 2개
-		Card* temp = new Card(Trump::JOKER, JOKER_NUM);
-		card_deck.push_back(temp);
-		card_ptr[card_ptr_size++] = temp;
-	}
+	for (int i = 0; i < 2; i++)  // JOKER 2개
+		card_deck.push_back(fac.MakeCard(Trump::JOKER, JOKER_NUM));
+
 
 	for (int t = Trump::HEART; t <= Trump::CLOVER; t++) {
-		for (int i = A; i <= K; i++) {
-			Card* temp = new Card((Trump)t, i);
-			card_deck.push_back(temp);
-			card_ptr[card_ptr_size++] = temp;
-		}
+		for (int i = A; i <= K; i++)
+			card_deck.push_back(fac.MakeCard((Trump)t, i));
+
+		RandomizeDeck();
 	}
-
-	RandomizeDeck();
-}
-
-Deck::~Deck() {
-	delete[] card_ptr;
 }
 
 
@@ -64,34 +54,30 @@ Card* Deck::DrawTop() {
 }
 
 
-void Deck::AddUsed(Card* c) {
-	card_used.push_back(c);
-	recent_card = c;
-}
-
-
-Card* Deck::GetRecentCard() const { return recent_card; }
-
 
 void Deck::Shuffle() {
-	card_deck = card_used;
-	card_used.clear();
-	card_used.push_back(recent_card);
-	card_deck.pop_front();
+	auto used_stack = ref_field.GetStack();
+	while (!used_stack->empty()) {
+		card_deck.push_back(used_stack->top());
+		used_stack->pop();
+	}
+	delete used_stack;
 	RandomizeDeck();
 }
 
 
 void Deck::RandomizeDeck() {
-	for (int i = card_deck.size(); i > 0; i--) {
+	random_shuffle(card_deck.begin(), card_deck.end());
+	/*for (int i = card_deck.size(); i > 0; i--) {
 		int temp = rand() % i;
 		card_deck.push_back(card_deck.at(temp));
 		card_deck.erase(card_deck.begin() + temp);
-	}
+		
+	}*/
 }
 
 
-void Deck::TestView() {
+void Deck::TestViewDeck() {
 	int i = 1;
 	for (deque<Card*>::iterator iter = card_deck.begin(); iter < card_deck.end(); iter++) {
 		cout.width(2); cout.fill(' ');

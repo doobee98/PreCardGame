@@ -3,7 +3,7 @@
 #include <string>
 #include "CardConfig.h"
 #include "ConsoleConfig.h"
-#include "Field.h"
+//#include "Field.h"
 using namespace std;
 
 
@@ -11,13 +11,15 @@ class Card {
 	const Trump t;
 	const int number;
 	const Attack atk_value;
+	Card(Trump t, int num); // private constructor : factory
+	friend class CardFactory;
 
 public:
-	Card(Trump t, int num);
 	Trump GetTrump() const;
 	int GetNumber() const;
-	void Use(Field& f) const;
-	bool CanUse(const Field& f) const;
+	Attack GetAtkValue() const;
+
+//	bool CanUse(const Field& f) const;
 	bool IsAtkCard() const;
 
 private:
@@ -49,16 +51,9 @@ Card::Card(Trump t, int num) : t(t), number(num), atk_value(InitializeAtk(num)) 
 
 Trump Card::GetTrump() const { return t; }
 int Card::GetNumber() const { return number; }
+Attack Card::GetAtkValue() const { return atk_value; }
 
 
-void Card::Use(Field& f) const {
-	// Field의 리드수트, 리드넘버를 바꾸고, 공격카드면 공격 스택을 추가함
-	f.SetLeadSuit(t);
-	f.SetLeadNumber(number);
-	if (IsAtkCard())
-		f.AddAtkStack(atk_value);
-	// 7, K, Q, J 처리
-}
 
 
 bool Card::CanUse(const Field& f) const{

@@ -4,15 +4,18 @@
 #include <iostream>
 #include "Deck.h"
 
-#define MAX_HAND 15
+
+enum Player_Config {
+	MAX_HAND = 15, START_DRAW_SIZE = 5
+};
+
 
 /*
-	설계에 있어 Player를 정확히 고민해볼 것
-	Deck까지는 맞음.
-	Controller의 역할까지 주어야 하는지를 고민하자. (Hand 분리?)
-	Field와 Deck을 인자로 전달받아야 하는가?
-
-	또, vector를 굳이 써야 하는가? deque로 대체할 수 없나?
+	해야할 것:
+	1. player 클래스 설계 정리. 특히 hand
+	2. card 클래스 메소드 정리
+	3. player controller 클래스 설계
+	4. io controller 클래스 설계
 */
 
 class Player {
@@ -20,22 +23,21 @@ private:
 	string name;
 	vector<Card*> hand;
 	int finish_number; // 파산과 승리를 똑같이?
-	Deck& deck_ref;
+	Deck& ref_deck; // IDrawTop을 정의할 수 있으나, deck의 public method는 생성자를 제외하면 DrawTop밖에 없기에 그냥 deck 타입을 사용함
 
 public:
 	Player(string name, Deck& ref);
 	bool IsFinished() const;
-	void Draw(Field f);
+	void Draw(int num);
 	void Sort();
 	void TestViewHand();
 
-private:
-	void Draw(int num);
+	void Action(int magic_number);
 };
 
 
 
-Player::Player(string name, Deck& ref) : name(name), deck_ref(ref) {
+Player::Player(string name, Deck& ref) : name(name), ref_deck(ref) {
 	finish_number = 0;
 }
 
@@ -43,22 +45,12 @@ Player::Player(string name, Deck& ref) : name(name), deck_ref(ref) {
 bool Player::IsFinished() const { return finish_number != 0; }
 
 
-void Player::Draw(Field f) {
-	if (f.IsAttacking()) {
-		Draw(f.GetAtkStack());
-		f.ResetAtkStack();
-	}
-	else {
-		Draw(1);
-	}
-}
-
 
 void Player::Draw(int num) {
-	for (int i = 0; i < num; i++) {
-		hand.push_back(deck_ref.DrawTop());
-	}
+	for(int i = 0; i < num; i++)
+		hand.push_back(ref_deck.DrawTop());
 }
+
 
 
 void Player::Sort() {

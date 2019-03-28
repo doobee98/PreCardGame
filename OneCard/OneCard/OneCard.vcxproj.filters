@@ -13,6 +13,21 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="헤더 파일\Card">
+      <UniqueIdentifier>{562f971f-6f81-4bde-b9ec-37bd0ae0de7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Field">
+      <UniqueIdentifier>{65ce66d2-f0b1-4a7b-8f1e-b0a2e90ca9f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Config">
+      <UniqueIdentifier>{e5685c3f-7f5f-4132-b019-99c9919f0c0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\TurnSystem">
+      <UniqueIdentifier>{a59ebb56-484c-4b72-8b23-1ee5bcd9176f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Deck">
+      <UniqueIdentifier>{04ab1b4d-3148-4131-b264-e1cbd5446450}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -20,23 +35,44 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Card.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Deck.h">
+    <ClInclude Include="GameController.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerController.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Card.h">
+      <Filter>헤더 파일\Card</Filter>
+    </ClInclude>
+    <ClInclude Include="CardFactory.h">
+      <Filter>헤더 파일\Card</Filter>
     </ClInclude>
     <ClInclude Include="Field.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Field</Filter>
     </ClInclude>
-    <ClInclude Include="CardConfig.h">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="IChangeField.h">
+      <Filter>헤더 파일\Field</Filter>
     </ClInclude>
     <ClInclude Include="ConsoleConfig.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="CardConfig.h">
+      <Filter>헤더 파일\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="TurnSystem.h">
+      <Filter>헤더 파일\TurnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="IGetStack.h">
+      <Filter>헤더 파일\Field</Filter>
+    </ClInclude>
+    <ClInclude Include="Deck.h">
+      <Filter>헤더 파일\Deck</Filter>
+    </ClInclude>
+    <ClInclude Include="IGetOpenCard.h">
+      <Filter>헤더 파일\Field</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
