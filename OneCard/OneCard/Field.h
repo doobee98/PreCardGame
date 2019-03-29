@@ -17,15 +17,15 @@ public:
 	Field();
 	virtual Card* GetOpenCard() const;
 	void PlayCard(Card* c);
-
-
+	bool CanPlayCard(const Card* c) const;
 	void ResetDrawStack();
 	int GetDrawStack() const;
+
+
+private:
 	Trump GetLeadSuit() const;
 	int GetLeadNumber() const;
 	bool IsAttacking() const;
-
-private:
 	void SetLead(Trump t, int num);
 	void AddDrawStack(Attack num);
 	stack <Card*>* GetStack();
@@ -53,6 +53,17 @@ void Field::PlayCard(Card* c) {
 }
 
 
+bool Field::CanPlayCard(const Card* c) const {
+	if (IsAttacking() == true && c->IsAtkCard() == false)
+		return false;
+
+	if (GetLeadSuit() == Trump::JOKER || c->GetTrump() == Trump::JOKER)
+		return true;
+	else
+		return GetLeadSuit() == c->GetTrump() || GetLeadNumber() == c->GetNumber;
+}
+
+
 void Field::ResetDrawStack() {
 	draw_stack = 1;
 }
@@ -71,8 +82,7 @@ bool Field::IsAttacking() const {
 
 
 void Field::SetLead(Trump t, int num) {
-	lead.first = t;
-	lead.second = num;
+	lead = make_pair(t, num);
 }
 
 void Field::AddDrawStack(Attack num) {

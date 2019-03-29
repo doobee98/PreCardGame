@@ -2,10 +2,8 @@
 #include <deque>
 #include <stack>
 #include <algorithm>
-/*
 #include <cstdlib>
 #include <ctime>
-*/
 #include "Card.h"
 #include "CardFactory.h"
 #include "IGetStack.h"
@@ -31,6 +29,7 @@ private:
 
 
 Deck::Deck(IGetStack& ref_field) : fac(CardFactory::GetInstance()), ref_field(ref_field) {
+	srand((unsigned int)time(NULL));
 
 	for (int i = 0; i < 2; i++)  // JOKER 2°³
 		card_deck.push_back(fac.MakeCard(Trump::JOKER, JOKER_NUM));
@@ -39,9 +38,9 @@ Deck::Deck(IGetStack& ref_field) : fac(CardFactory::GetInstance()), ref_field(re
 	for (int t = Trump::HEART; t <= Trump::CLOVER; t++) {
 		for (int i = A; i <= K; i++)
 			card_deck.push_back(fac.MakeCard((Trump)t, i));
-
-		RandomizeDeck();
 	}
+
+	RandomizeDeck();
 }
 
 
@@ -67,13 +66,13 @@ void Deck::Shuffle() {
 
 
 void Deck::RandomizeDeck() {
-	random_shuffle(card_deck.begin(), card_deck.end());
-	/*for (int i = card_deck.size(); i > 0; i--) {
+//	random_shuffle(card_deck.begin(), card_deck.end());
+	for (int i = card_deck.size(); i > 0; i--) {
 		int temp = rand() % i;
 		card_deck.push_back(card_deck.at(temp));
 		card_deck.erase(card_deck.begin() + temp);
 		
-	}*/
+	}
 }
 
 

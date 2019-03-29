@@ -51,7 +51,7 @@ TurnSystem::TurnSystem(int num) : player_num(num) {
 
 
 int TurnSystem::NextPlayer(IGetOpenCard& ref_field) {
-	switch ((ref_field.GetTopCard())->GetNumber()) {
+	switch ((ref_field.GetOpenCard())->GetNumber()) {
 	case J: JumpTurn(); break;
 	case Q: ReverseTurn(); break;
 	case K: RepeatTurn(); break;

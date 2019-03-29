@@ -3,7 +3,6 @@
 #include <string>
 #include "CardConfig.h"
 #include "ConsoleConfig.h"
-//#include "Field.h"
 using namespace std;
 
 
@@ -18,8 +17,6 @@ public:
 	Trump GetTrump() const;
 	int GetNumber() const;
 	Attack GetAtkValue() const;
-
-//	bool CanUse(const Field& f) const;
 	bool IsAtkCard() const;
 
 private:
@@ -52,20 +49,6 @@ Card::Card(Trump t, int num) : t(t), number(num), atk_value(InitializeAtk(num)) 
 Trump Card::GetTrump() const { return t; }
 int Card::GetNumber() const { return number; }
 Attack Card::GetAtkValue() const { return atk_value; }
-
-
-
-
-bool Card::CanUse(const Field& f) const{
-	if (f.IsAttacking() == true && IsAtkCard() == false) 
-		return false;
-	
-
-	if (f.GetLeadSuit() == Trump::JOKER || t == Trump::JOKER)
-		return true;
-	else
-		return f.GetLeadSuit() == t || f.GetLeadNumber() == number;
-}
 
 
 bool Card::IsAtkCard() const {

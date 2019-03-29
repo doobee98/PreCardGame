@@ -28,6 +28,9 @@
     <Filter Include="헤더 파일\Deck">
       <UniqueIdentifier>{04ab1b4d-3148-4131-b264-e1cbd5446450}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\PlayerController">
+      <UniqueIdentifier>{f14989a1-f3fb-44f3-ac49-438a42b9e5fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -41,9 +44,6 @@
     <ClInclude Include="GameController.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerController.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Card.h">
       <Filter>헤더 파일\Card</Filter>
     </ClInclude>
@@ -51,9 +51,6 @@
       <Filter>헤더 파일\Card</Filter>
     </ClInclude>
     <ClInclude Include="Field.h">
-      <Filter>헤더 파일\Field</Filter>
-    </ClInclude>
-    <ClInclude Include="IChangeField.h">
       <Filter>헤더 파일\Field</Filter>
     </ClInclude>
     <ClInclude Include="ConsoleConfig.h">
@@ -73,6 +70,12 @@
     </ClInclude>
     <ClInclude Include="IGetOpenCard.h">
       <Filter>헤더 파일\Field</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerController.h">
+      <Filter>헤더 파일\PlayerController</Filter>
+    </ClInclude>
+    <ClInclude Include="UserController.h">
+      <Filter>헤더 파일\PlayerController</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

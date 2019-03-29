@@ -1,15 +1,11 @@
 #include <iostream>
-#include "Player.h"
+#include "GameController.h"
 using namespace std;
 
 int main(void) {
 	cout << "Project Onecard" << endl;
 	
-	Field f;
-	f.AddAtkStack(Attack::JOKER);
-	f.AddAtkStack(Attack::JOKER);
-	Deck d;
-	Player p1("ÀÌµÎ¼·", d);
-	p1.Draw(f);
-	p1.TestViewHand();
+	GameController& game = GameController::GetInstance(4);
+	game.TestViewGame();
+//	game.Run();
 }
