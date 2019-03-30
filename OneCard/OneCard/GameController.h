@@ -12,8 +12,8 @@ class GameController {
 	static GameController* instance;
 private:
 	deque < pair <Player, PlayerController> > players;
-	Deck deck;
 	Field field;
+	Deck deck;
 	TurnSystem& tsys;
 
 

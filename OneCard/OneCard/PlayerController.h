@@ -5,6 +5,9 @@
 #endif
 
 enum Action {
+	HAND1, HAND2, HAND3, HAND4, HAND5, 
+	HAND6, HAND7, HAND8, HAND9, HAND10,
+	HAND11, HAND12, HAND13, HAND14, HAND15,
 	DRAW = -1, SORT = -2, UNDEFINED = -100 // 1 <= HAND <= 15
 };
 
@@ -24,7 +27,7 @@ private:
 };
 
 
-int PlayerController::SelectAction() const  // 프로토. 실제 GetKey 설계후 다시 건드리기
+int PlayerController::SelectAction() const { // 프로토. 실제 GetKey 설계후 다시 건드리기
 	int key = GetKey();
 
 	if (key == Action::DRAW)
