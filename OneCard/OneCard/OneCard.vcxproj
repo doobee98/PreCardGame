@@ -121,20 +121,21 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AIPlayer.h" />
     <ClInclude Include="Card.h" />
     <ClInclude Include="CardConfig.h" />
     <ClInclude Include="CardFactory.h" />
     <ClInclude Include="ConsoleConfig.h" />
     <ClInclude Include="Deck.h" />
     <ClInclude Include="Field.h" />
+    <ClInclude Include="GameController.h" />
     <ClInclude Include="IGetStack.h" />
-    <ClInclude Include="IGetOpenCard.h" />
     <ClInclude Include="IOController.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="GameController.h" />
-    <ClInclude Include="PlayerController.h" />
+    <ClInclude Include="IPrint.h" />
     <ClInclude Include="TurnSystem.h" />
-    <ClInclude Include="UserController.h" />
+    <ClInclude Include="UserPlayer.h" />
+    <ClInclude Include="ViewConfig.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

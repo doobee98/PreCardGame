@@ -1,11 +1,13 @@
 #pragma once
 #include <stack>
-#include "Card.h"
 #ifndef interface
 #define interface class
 #endif
 
-class IGetStack {
+class Card;
+
+
+interface IGetStack {
 public:
-	virtual stack <Card*>* GetStack() = 0;
+	virtual std::stack<const Card*>* GetStack() = 0;
 };

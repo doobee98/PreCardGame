@@ -1,86 +1,78 @@
 #pragma once
 #include <deque>
 #include <stack>
-#include <algorithm>
-#include <cstdlib>
 #include <ctime>
-#include "Card.h"
+#include <cstdlib>
 #include "CardFactory.h"
+#include "IPrint.h"
 #include "IGetStack.h"
 
 
-class Deck {
+class Deck : public IPrint {
 private:
 	CardFactory& fac;
-	deque<Card*> card_deck;
+	deque<const Card*> card_deck;
 	IGetStack& ref_field;
 
 public:
-	Deck(IGetStack& ref_field);
-	Card* DrawTop();
-	void TestViewDeck();
+	Deck(IGetStack& field);
+	void Shuffle();
+	const Card* DrawTop();
+	void Print(int x, int y) const;
 
 private:
-	void Shuffle();
 	void RandomizeDeck();
 };
 
 
 
 
-Deck::Deck(IGetStack& ref_field) : fac(CardFactory::GetInstance()), ref_field(ref_field) {
+
+Deck::Deck(IGetStack& field) 
+	: fac(CardFactory::GetInstance()),
+	card_deck(),
+	ref_field(field) 
+{
 	srand((unsigned int)time(NULL));
-
-	for (int i = 0; i < 2; i++)  // JOKER 2°³
-		card_deck.push_back(fac.MakeCard(Trump::JOKER, JOKER_NUM));
-
-
-	for (int t = Trump::HEART; t <= Trump::CLOVER; t++) {
-		for (int i = A; i <= K; i++)
-			card_deck.push_back(fac.MakeCard((Trump)t, i));
+	for(int i = 0; i < 2; i++)
+		card_deck.push_back(fac.MakeCard(JOKER_TRP, JOKER_NUM));
+	for (int t = Trump::SPADE; t <= Trump::DIAMOND; t++) {
+		for(int n = A; n <= K; n++)
+			card_deck.push_back(fac.MakeCard((Trump)t, (Number)n));
 	}
-
 	RandomizeDeck();
 }
 
 
-Card* Deck::DrawTop() {
+void Deck::Shuffle() {
+	stack<const Card*>* ptr_used_stack = ref_field.GetStack();
+	while (!ptr_used_stack->empty()) {
+		card_deck.push_back(ptr_used_stack->top());
+		ptr_used_stack->pop();
+	}
+	delete ptr_used_stack;
+	RandomizeDeck();
+}
+
+
+const Card* Deck::DrawTop() {
 	if (card_deck.empty())
 		Shuffle();
-	Card* temp = card_deck.back();
+	const Card* temp = card_deck.back();
 	card_deck.pop_back();
 	return temp;
 }
 
 
-
-void Deck::Shuffle() {
-	auto used_stack = ref_field.GetStack();
-	while (!used_stack->empty()) {
-		card_deck.push_back(used_stack->top());
-		used_stack->pop();
-	}
-	delete used_stack;
-	RandomizeDeck();
-}
-
-
 void Deck::RandomizeDeck() {
-//	random_shuffle(card_deck.begin(), card_deck.end());
 	for (int i = card_deck.size(); i > 0; i--) {
 		int temp = rand() % i;
 		card_deck.push_back(card_deck.at(temp));
 		card_deck.erase(card_deck.begin() + temp);
-		
 	}
 }
 
 
-void Deck::TestViewDeck() {
-	int i = 1;
-	for (deque<Card*>::iterator iter = card_deck.begin(); iter < card_deck.end(); iter++) {
-		cout.width(2); cout.fill(' ');
-		cout << i++;
-		cout << "   " << **iter << endl;
-	}
+void Deck::Print(int x, int y) const {
+	ConsoleConfig::XYPrint(x, y, "|" + to_string(card_deck.size()) + "|");
 }

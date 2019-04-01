@@ -1,66 +1,60 @@
 #pragma once
 #include <stack>
-#include <utility>
 #include "Card.h"
-#include "CardConfig.h"
-#include "IGetOpenCard.h"
+#include "IPrint.h"
 #include "IGetStack.h"
 
-
-class Field : public IGetOpenCard, public IGetStack {
+class Field : public IPrint, public IGetStack {
 private:
-	stack <Card*> card_used;
-	pair <Trump, int> lead;
+	stack<const Card*> card_used;
+	Trump lead_trump;
+	Number lead_number;
 	int draw_stack;
+
 
 public:
 	Field();
-	virtual Card* GetOpenCard() const;
-	void PlayCard(Card* c);
-	bool CanPlayCard(const Card* c) const;
+	void PlayCard(const Card* card); // 7 카드 플레이시, 현재 턴 플레이어 참조하여 색깔 정하게 하기
+	bool CanPlayCard(const Card* card);
+	const Card* GetOpenCard() const;
 	void ResetDrawStack();
 	int GetDrawStack() const;
-
+	void Print(int x, int y) const;
 
 private:
-	Trump GetLeadSuit() const;
-	int GetLeadNumber() const;
-	bool IsAttacking() const;
-	void SetLead(Trump t, int num);
-	void AddDrawStack(Attack num);
-	stack <Card*>* GetStack();
+	void AddDrawStack(Attack atk);
+	void SetLead(Trump t, Number n);
+	stack<const Card*>* GetStack();
 };
 
 
-
-
 Field::Field() {
-	SetLead(Trump::JOKER, JOKER_NUM);
 	ResetDrawStack();
 }
 
 
-Card* Field::GetOpenCard() const {
-	return card_used.top();
+void Field::PlayCard(const Card* card) {
+	AddDrawStack(card->GetAttack());
+	SetLead(card->GetTrump(), card->GetNumber());
+	//active card ability (7, j, q, k)
+	card_used.push(card);
 }
 
 
-void Field::PlayCard(Card* c) {
-	card_used.push(c);
-	AddDrawStack(c->GetAtkValue());
-	SetLead(c->GetTrump(), c->GetNumber());
-	// 7의 경우 IOController에서 Trump를 결정하게 물어보도록 메소드를 호출할 것
-}
-
-
-bool Field::CanPlayCard(const Card* c) const {
-	if (IsAttacking() == true && c->IsAtkCard() == false)
+bool Field::CanPlayCard(const Card* card) {
+	if (draw_stack != 1 && card->GetAttack() == Attack::UNDEFINED) // attack field, but not attack card
 		return false;
+	else {
+		if (lead_trump == Trump::JOKER_TRP || card->GetTrump() == Trump::JOKER_TRP)
+			return true;
+		else
+			return lead_trump == card->GetTrump() || lead_number == card->GetNumber();
+	}
+}
 
-	if (GetLeadSuit() == Trump::JOKER || c->GetTrump() == Trump::JOKER)
-		return true;
-	else
-		return GetLeadSuit() == c->GetTrump() || GetLeadNumber() == c->GetNumber;
+
+const Card* Field::GetOpenCard() const {
+	return card_used.top();
 }
 
 
@@ -68,40 +62,34 @@ void Field::ResetDrawStack() {
 	draw_stack = 1;
 }
 
-int Field::GetDrawStack() const { return draw_stack; }
-Trump Field::GetLeadSuit() const { return lead.first; }
-int Field::GetLeadNumber() const { return lead.second; }
 
-
-bool Field::IsAttacking() const {
-	if (draw_stack == 1)
-		return false;
-	else
-		return true;
+int Field::GetDrawStack() const {
+	return draw_stack;
 }
 
 
-void Field::SetLead(Trump t, int num) {
-	lead = make_pair(t, num);
-}
-
-void Field::AddDrawStack(Attack num) {
-	if (num != Attack::UNDEFINED) {
+void Field::AddDrawStack(Attack atk) {
+	if (atk != Attack::UNDEFINED) {
 		if (draw_stack == 1)
-			draw_stack--;
-		draw_stack += static_cast<int>(num);
+			draw_stack = 0;
+		draw_stack += atk;
 	}
 }
 
 
+void Field::SetLead(Trump t, Number n) {
+	lead_trump = t;
+	lead_number = n;
+}
 
-stack <Card*>* Field::GetStack() {
+
+stack<const Card*>* Field::GetStack() {
 	if (card_used.empty())
 		throw "Field::GetStack : 사용한 카드 스택이 비어 있습니다.";
 
-	// 맨 위 한장은 남기고 섞는다. 리드 카드를 확인해야 하기 때문
-	Card* top_card = card_used.top();
-	stack <Card*>* temp = new stack <Card*>();
+	// reserve one card in used stack for players checking top card
+	const Card* top_card = card_used.top();
+	stack <const Card*>* temp = new stack <const Card*>();
 	card_used.pop();
 
 	while (!card_used.empty()) {
@@ -110,6 +98,16 @@ stack <Card*>* Field::GetStack() {
 	}
 
 	card_used.push(top_card);
-	
+
 	return temp;
+}
+
+
+void Field::Print(int x, int y) const {
+	ConsoleConfig::GotoXY(x, y);
+	cout << *GetOpenCard();
+	ConsoleConfig::XYPrint(x + 7, y, CardConfig::TrumpToString(lead_trump)); 
+	// ViewConfig 상수를 이용해서 7과 11 따위의 값을 설정하기
+	if(draw_stack != 1)
+		ConsoleConfig::XYPrint(x + 11, y, "Atk: " + to_string(draw_stack));
 }
