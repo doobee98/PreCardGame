@@ -1,46 +1,44 @@
 #pragma once
+#include <iostream>
 #include "Card.h"
-#define TOTAL_CARD_NUM 54
+#define MAX_CARD_NUM 154
+
 
 class CardFactory {
-	static CardFactory* instance;
 private:
-	Card** card_list;
-	int card_list_count;
+	static CardFactory* instance;
 	CardFactory();
 	~CardFactory();
+	Card** card_list;
+	int card_num;
 
 public:
-	static CardFactory& GetInstance(); // 싱글톤 패턴
-	Card* MakeCard(Trump t, int num);
+	static CardFactory& GetInstance();
+	const Card* MakeCard(Trump trp, Number num);
 };
 
 
 
+
 CardFactory* CardFactory::instance = NULL;
-CardFactory& CardFactory::GetInstance() {
-	if (instance == NULL) {
-		instance = new CardFactory();
-	}
-	return *instance;
-}
-
-
 CardFactory::CardFactory() {
-	card_list = new Card*[TOTAL_CARD_NUM];
-	card_list_count = 0;
+	card_list = new Card*[MAX_CARD_NUM];
+	card_num = 0;
 }
-
 
 CardFactory::~CardFactory() {
 	delete[] card_list;
 }
 
+CardFactory& CardFactory::GetInstance() {
+	if (instance == NULL) 
+		instance = new CardFactory();
+	return *instance;
+}
 
-Card* CardFactory::MakeCard(Trump t, int num) {
-	Card* temp = new Card(t, num);
-	if (card_list_count >= TOTAL_CARD_NUM)
-		throw "CardFactory::MakeCard : TOTAL_CARD_NUM가 넘는 수의 Card 객체가 생성되었습니다.";
-	card_list[card_list_count++] = temp;
-	return temp;
+const Card* CardFactory::MakeCard(Trump trp, Number num) {
+	if (card_num >= MAX_CARD_NUM)
+		throw "CardFactory::MakeCard - Over Max Card Num!";
+	card_list[card_num++] = new Card(trp, num);
+	return card_list[card_num - 1];
 }

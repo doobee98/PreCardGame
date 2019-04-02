@@ -1,118 +1,173 @@
 #pragma once
-#include <utility>
-#include "Player.h"
-#include "PlayerController.h"
+#include <iostream>
+#include <deque>
+#include "UserPlayer.h"
+#include "AIPlayer.h"
 #include "Deck.h"
 #include "Field.h"
 #include "TurnSystem.h"
+#include "ViewController.h"
 using namespace std;
 
 
 class GameController {
-	static GameController* instance;
 private:
-	deque < pair <Player, PlayerController> > players;
+	static GameController* instance;
+	GameController();
+	~GameController();
+	
+	deque<Player*> players;
 	Field field;
 	Deck deck;
-	TurnSystem& tsys;
+	TurnSystem& turn;
 
-
-	GameController(int player_num);
-	~GameController();
+	ViewController view;
 
 public:
-	static GameController& GetInstance(int player_num);
+	static GameController& GetInstance();
+	void Init();
 	void Run();
-	void TestViewGame();
 
 private:
-	void InitializeGame();
+	void SevenEvent();
+	string MakePlayingLog(const Player& now_player, const Card* playing_card);
 };
 
 
 
-
 GameController* GameController::instance = NULL;
-GameController& GameController::GetInstance(int player_num = 0) {
-	if (instance == NULL) {
-		if (player_num == 0)
-			throw "GameController::GetInstance : 초기화 오류";
-		instance = new GameController(player_num);
-	}
+
+GameController& GameController::GetInstance() {
+	if (instance == NULL) 
+		instance = new GameController();
+	
 	return *instance;
 }
 
+GameController::GameController() 
+	: players(), field(), deck(field), turn(TurnSystem::GetInstance()), view(players, deck, field, turn) {
 
-GameController::GameController(int player_num) : field(), deck(field), tsys(TurnSystem::GetInstance(player_num)) {
-	if (player_num < 2 && player_num > 5)
-		throw "GameController::GameController : Invalid Player Num - n should be in range 2 <= n <= 5";
-
-	players.push_back(make_pair(Player("You", deck), PlayerController()));
-	player_num--;
-
-	for (int i = 1; i <= player_num; i++) 
-		players.push_back(make_pair(Player("AI@" + to_string(i), deck), PlayerController()));
-	
 }
-
 
 GameController::~GameController() {
-
+	auto iter = players.begin();
+	for (; iter != players.end(); iter++)
+		delete *iter;
 }
 
 
-void GameController::Run() {
-	InitializeGame();
-	auto iter = players.begin(); // 시작 iter 참조 위치를 랜덤으로 -> 시작 플레이어를 랜덤으로
+void GameController::Init() {
+	// 총 플레이어 인원 입력받기
+	int player_num = view.InitAndGetPlayerNum();
+	turn.SetMaxPlayerNum(player_num);
 
-	while (true) {
-		Player& now_player = (*iter).first;
-		PlayerController& now_player_controller = (*iter).second;
-		
-		// UseHand, Draw, Sort
-		// 불가능한 UseHand는 IO에서 처리하기
-		// Exclaim OneCard는 메소드를 따로 둠
-		int choice = now_player_controller.SelectAction();
-		if (choice == Action::DRAW) {
-			now_player.Draw(field.GetDrawStack());
-			field.ResetDrawStack();
-		}
-		else if (choice == Action::SORT) {
-			now_player.SortHand();
-			continue; // hand를sort하고 다시 while문의 맨 처음으로 돌아감
-		}
-		else if (choice >= 1 && choice <= MAX_HAND) { // HAND
-			field.PlayCard(now_player.ChooseHand(choice));
-		}
-		else { // choice == UNDEFINED
-			throw "GameController::Run : Choice 값이 Undefined입니다.";
-		}
+	// 유저 생성, 드로우
+	players.push_back(new UserPlayer("User", deck));
+	players.back()->Draw(5);
 
-		iter = players.begin() + tsys.NextPlayer(field);
+	// ai생성, 드로우
+	for (int i = 1; i < player_num; i++) {
+		players.push_back(new AIPlayer("Com" + to_string(i), deck));
+		players.back()->Draw(5);
 	}
 
-}
-
-
-void GameController::InitializeGame() {
-
-	for (auto iter = players.begin(); iter != players.end(); iter++)
-		(*iter).first.Draw(START_DRAW_SIZE);
-
+	// 필드에 1장 오픈
 	field.PlayCard(deck.DrawTop());
+	field.NotifySpecial();
 	field.ResetDrawStack();
 }
 
 
+void GameController::Run() {
+	Init();
 
-void GameController::TestViewGame() {
-	InitializeGame();
-	cout << "OpenCard : ";
-	cout << *(field.GetOpenCard()) << endl;
-	for (auto iter = players.begin(); iter != players.end(); iter++) {
-		Player& now_player = (*iter).first;
-		PlayerController& now_player_controller = (*iter).second;
+	auto iter = players.begin();
 
-		now_player.TestViewHand();
+	while (true) {
+		// 이번 턴 플레이어 결정
+		iter = turn.NextPlayer(iter);
+		Player& now_player = **iter;
+
+		// 유저 사이드 스크린
+		view.UserScreen();
+
+		// 필드를 본 플레이어에게 행동 결정받기
+		Action choice = now_player.SelectAction(field);
+
+		// PlayCard
+		if (choice >= HAND1 && choice <= HAND15) {
+			const Card* playing_card = now_player.PopHandCard(choice);
+			field.PlayCard(playing_card);
+			view.UpdateLog(MakePlayingLog(static_cast<const Player&>(now_player), playing_card));
+			switch (field.NotifySpecial()) {
+			case Notice::JACK: turn.PlayJ();  break;
+			case Notice::QUEEN: turn.PlayQ(); break;
+			case Notice::KING: turn.PlayK(); break;
+			case Notice::SEVEN: {
+				SevenEvent();
+				Trump choice_trump = now_player.SelectSevenEvent();
+				field.SetLead(choice_trump, Number::NUM_7);
+				view.UpdateLog(now_player.GetName() + " changes lead trump.");
+			}
+			default: turn.PlayDefault(); // case Notice::NONE:
+			}
+		}
+
+		// Draw, Sort, etc
+		else {
+			switch (choice) {
+			case DRAW: {
+				int num = field.GetDrawStack();
+				now_player.Draw(num);
+				field.ResetDrawStack();
+				turn.PlayDefault();
+				view.UpdateLog(now_player.GetName() + " draws " + to_string(num) + " cards.");
+				break;
+			}
+			case SORT:
+				now_player.SortHand();
+				continue; // 턴이 바뀌지 않은 채로 userscreen을 다시 띄운다.
+			default:
+				continue;
+			}
+		}
+	
+		//check game end
 	}
+}
+
+
+void GameController::SevenEvent() {
+	view.UpdateLog("1. Spade, 2. Clover, \n 3. Heart, 4. Diamond");
+	view.UserScreen();
+}
+
+
+string GameController::MakePlayingLog(const Player& now_player, const Card* playing_card) {
+	const string& name = now_player.GetName();
+
+	Trump t = playing_card->GetTrump();
+	Number n = playing_card->GetNumber();
+	string card_string;
+
+	if (t == JOKER_TRP)
+		card_string = "JOKER";
+	else {
+		switch (t) {
+		case SPADE: card_string += "Spade "; break;
+		case CLOVER: card_string += "Clover "; break;
+		case HEART: card_string += "Heart "; break;
+		case DIAMOND: card_string += "Diamond "; break;
+		default: break;
+		}
+		switch (n) {
+		case A: card_string += "A"; break;
+		case J: card_string += "J"; break;
+		case Q: card_string += "Q"; break;
+		case K: card_string += "K"; break;
+		default: card_string += to_string(n);
+		}
+	}
+
+	return name + " plays " + card_string + ".";
 }

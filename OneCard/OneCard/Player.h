@@ -1,56 +1,61 @@
 #pragma once
-#include <vector>
+#include <deque>
 #include <algorithm>
-#include <iostream>
-#include "Deck.h"
+#include "Card.h"
+#include "Field.h"
+#include "IPrint.h"
+#include "IDrawTop.h"
 
+#ifndef interface
+#define interface class
+#endif
 
-enum Player_Config {
-	MAX_HAND = 15, START_DRAW_SIZE = 5
+enum Action {
+	HAND1, HAND2, HAND3, HAND4, HAND5, HAND6, HAND7, HAND8, HAND9, HAND10,
+	HAND11, HAND12, HAND13, HAND14, HAND15, DRAW, SORT, ACT_UNDEFINED
 };
 
 
-/*
-	해야할 것:
-	3. player controller 클래스 설계
-	4. io controller 클래스 설계
-
-	막힌부분: IO를 어디서 처리해줘야 하는가?
-	Game 전체에 대한 정보는 GameController의 출력 메소드를 통해 얻어야함.
-	IO Controller를 따로 둬야 하는가? 그렇다면 그 컨트롤러의 위치는? GameController와의 관계는?
-*/
-
-class Player {
+interface Player : public IPrint {
 private:
 	string name;
-	vector<Card*> hand; // sort, 출력 있어야함
-	int finish_number; // 파산과 승리를 똑같이?
-	Deck& ref_deck; // IDrawTop을 정의할 수 있으나, deck의 public method는 생성자를 제외하면 DrawTop밖에 없기에 그냥 deck 타입을 사용함
+	deque<const Card*> hand;
+	bool now_turn;
+	IDrawTop& ref_deck;
 
 public:
-	Player(string name, Deck& ref);
+	Player(string name, IDrawTop& deck);
+	const string& GetName() const;
 	void Draw(int num);
+	const Card* PopHandCard(int num);
 	void SortHand();
-	Card* ChooseHand(int num) const;
-
-	bool IsFinished() const;
-	void TestViewHand();
+	const deque<const Card*>& GetHand() const;
+	virtual Action SelectAction(const Field& ref_field) const = 0;
+	virtual Trump SelectSevenEvent() = 0;
+	void SetNowTurn(bool value);
+	void Print(int x, int y) const;
 };
 
 
 
-Player::Player(string name, Deck& ref) : name(name), ref_deck(ref) {
-	finish_number = 0;
+
+
+Player::Player(string name, IDrawTop& deck) : name(name), hand(), now_turn(false), ref_deck(deck) {
+
+}
+
+const string& Player::GetName() const { return name; }
+
+void Player::Draw(int num) {
+	for (int i = 0; i < num; i++)
+		hand.push_back(ref_deck.DrawTop());
 }
 
 
-bool Player::IsFinished() const { return finish_number != 0; }
-
-
-
-void Player::Draw(int num) {
-	for(int i = 0; i < num; i++)
-		hand.push_back(ref_deck.DrawTop());
+const Card* Player::PopHandCard(int num) {
+	const Card* temp = hand.at(num);
+	hand.erase(hand.begin() + num);
+	return temp;
 }
 
 void Player::SortHand() {
@@ -58,19 +63,27 @@ void Player::SortHand() {
 }
 
 
-Card* Player::ChooseHand(int num) const {
-	if (num < 1 || num > hand.size())
-		throw "Player::ChooseHand : 핸드 사이즈에 벗어나는 입력이 들어왔습니다.";
-	return hand.at(num - 1);
+const deque<const Card*>& Player::GetHand() const {
+	return hand;
 }
 
 
-void Player::TestViewHand() {
-	cout << name << endl;
-	int i = 1;
-	for (vector<Card*>::iterator iter = hand.begin(); iter != hand.end(); iter++) {
-		cout.width(2); cout.fill(' ');
-		cout << i++;
-		cout << "   " << **iter << endl;
+void Player::SetNowTurn(bool value) {
+	now_turn = value;
+}
+
+void Player::Print(int x, int y) const {
+	string hand_size_string = to_string(hand.size());
+	if (hand.size() < 10) hand_size_string = "0" + hand_size_string;
+
+	if (now_turn == true) {
+		ConsoleConfig::SetColor(Color::BLACK, Color::LIGHTGRAY);
+		ConsoleConfig::XYPrint(x, y, " " + name + " ");
+		ConsoleConfig::XYPrint(x, y + 1, "  " + hand_size_string + "  ");
+		ConsoleConfig::SetColor();
+	}
+	else {
+		ConsoleConfig::XYPrint(x + 1, y, name);
+		ConsoleConfig::XYPrint(x + 2, y + 1, hand_size_string);
 	}
 }

@@ -1,34 +1,29 @@
 #pragma once
 #include <iostream>
-#include <string>
 #include "CardConfig.h"
 #include "ConsoleConfig.h"
 using namespace std;
 
 
 class Card {
-	const Trump t;
-	const int number;
-	const Attack atk_value;
-	Card(Trump t, int num); // private constructor : factory
-	friend class CardFactory;
+private:
+	const Trump trp;
+	const Number num;
+	const Attack atk;
 
 public:
+	Card(Trump t, Number n);
 	Trump GetTrump() const;
-	int GetNumber() const;
-	Attack GetAtkValue() const;
-	bool IsAtkCard() const;
+	Number GetNumber() const;
+	Attack GetAttack() const;
 
 private:
 	bool CheckValid() const;
-	Attack InitializeAtk(int num) const;
 
-public:
 	friend ostream& operator<<(ostream& os, const Card& c);
-	bool operator<(const Card& other) const;
 };
 
-bool compare(Card* c1, Card* c2) { // 포인터형 비교
+bool compare(const Card* c1, const Card* c2) { // 포인터형 비교
 	if (c1->GetTrump() < c2->GetTrump())
 		return true;
 	else if (c1->GetTrump() > c2->GetTrump())
@@ -39,96 +34,48 @@ bool compare(Card* c1, Card* c2) { // 포인터형 비교
 
 
 
-Card::Card(Trump t, int num) : t(t), number(num), atk_value(InitializeAtk(num)) {
-	// 객체 초기화시 trump와 value가 valid한 조합인지 체크함
-	if (CheckValid() == false)
-		throw "Card / CheckValid: Invalid Card Pattern";
+
+Card::Card(Trump t, Number n) : trp(t), num(n), atk(CardConfig::NumToAtk(num)){
+	if (CheckValid() != true)
+		throw "Card::Card - Initialization Error";
 }
 
-
-Trump Card::GetTrump() const { return t; }
-int Card::GetNumber() const { return number; }
-Attack Card::GetAtkValue() const { return atk_value; }
-
-
-bool Card::IsAtkCard() const {
-	return atk_value != Attack::UNDEFINED;
-}
-
+Trump Card::GetTrump() const { return trp; }
+Number Card::GetNumber() const { return num; }
+Attack Card::GetAttack() const { return atk; }
 
 bool Card::CheckValid() const {
-	switch (t) {
-	case Trump::JOKER:
-		if (number != JOKER_NUM) return false;
-		break;
-	case Trump::MAX: return false;
-	default: // 4 Pattern trump
-		if (number < A || number > K) return false;
-		break;
-	}
-
-	return true;
+	// because if init atk method, we don't check ATK
+	if (trp == JOKER_TRP) 
+		return num == JOKER_NUM;
+	else 
+		return num != JOKER_NUM;
 }
-
-
-Attack Card::InitializeAtk(int num) const {
-	switch (num) {
-	case A: 
-		return Attack::ACE;
-	case 2: 
-		return Attack::TWO;
-	case JOKER_NUM:
-		return Attack::JOKER;
-	default:
-		return Attack::UNDEFINED;
-	}
-}
-
 
 ostream& operator<<(ostream& os, const Card& c) {
-	switch (c.t){
-	case Trump::JOKER:
-		SETCOLOR(YELLOW);
+	switch (c.trp) {
+	case JOKER_TRP:
+		ConsoleConfig::SetColor(Color::YELLOW);
 		os << "JOKER";
-		SETCOLOR();
-		break;
-	case Trump::HEART: case Trump::DIAMOND:
-		SETCOLOR(LIGHTRED);
-		os << PRINT_TRUMP(c.t) << " ";
-		os.width(2); os.fill(' ');
-		switch (c.number) {
-		case A: os << "A"; break;
-		case J: os << "J"; break;
-		case Q: os << "Q"; break;
-		case K: os << "K"; break;
-		default: os << c.number; break;
-		}
-		SETCOLOR();
-		break;
-	case Trump::CLOVER: case Trump::SPADE:
-		SETCOLOR(DARKGRAY);
-		os << PRINT_TRUMP(c.t) << " ";
-		os.width(2); os.fill(' ');
-		switch (c.number) {
-		case A: os << "A"; break;
-		case J: os << "J"; break;
-		case Q: os << "Q"; break;
-		case K: os << "K"; break;
-		default: os << c.number; break;
-		}
-		SETCOLOR();
-		break;
-	default:
-		throw "Card / operator<< : Trump = MAX";
-	}
-	return os;
-}
+		ConsoleConfig::SetColor();
+		return os;
 
-bool Card::operator<(const Card& other) const {
-	if (t < other.GetTrump())
-		return true;
-	else if (t > other.GetTrump())
-		return false;
-	else 
-		return number < other.GetNumber();
+	case HEART: case DIAMOND:
+		ConsoleConfig::SetColor(Color::LIGHTRED); break;
+	case SPADE: case CLOVER:
+		ConsoleConfig::SetColor(Color::DARKGRAY); break;
+	}
+
+	os << CardConfig::TrumpToString(c.trp);
+	os << " ";
+	os.width(2); os.fill(' ');
+	switch (c.num) {
+	case A: os << "A"; break;
+	case J: os << "J"; break;
+	case Q: os << "Q"; break;
+	case K: os << "K"; break;
+	default: os << c.num; break;
+	}
+	ConsoleConfig::SetColor();
+	return os;
 }
