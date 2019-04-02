@@ -23,9 +23,10 @@ public:
 	int GetDrawStack() const;
 	void Print(int x, int y) const;
 
+	void SetLead(Trump t, Number n); // GameController에서 사용하여야 함
+
 private:
 	void AddDrawStack(Attack atk);
-	void SetLead(Trump t, Number n);
 	stack<const Card*>* GetStack();
 };
 
@@ -118,10 +119,16 @@ stack<const Card*>* Field::GetStack() {
 
 
 void Field::Print(int x, int y) const {
+	// 오픈 카드
 	ConsoleConfig::GotoXY(x, y);
 	cout << *GetOpenCard();
-	ConsoleConfig::XYPrint(x + 7, y, CardConfig::TrumpToString(lead_trump)); 
-	// ViewConfig 상수를 이용해서 7과 11 따위의 값을 설정하기
+
+	// 펼쳐진 카드가 7이면, lead trump가 바뀌었을 수 있으므로 표시해줌
+	if(GetOpenCard()->GetNumber() == Number::NUM_7)
+		ConsoleConfig::XYPrint(x + 7, y, CardConfig::TrumpToString(lead_trump)); 
+		// ViewConfig 상수를 이용해서 7과 11 따위의 값을 설정하기
+
+	// 드로우 스택 (공격) 수치가 있을 시 표기
 	if(draw_stack != 1)
 		ConsoleConfig::XYPrint(x + 11, y, "Atk: " + to_string(draw_stack));
 }

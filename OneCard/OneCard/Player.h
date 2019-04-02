@@ -25,18 +25,26 @@ private:
 
 public:
 	Player(string name, IDrawTop& deck);
+	const string& GetName() const;
 	void Draw(int num);
 	const Card* PopHandCard(int num);
 	void SortHand();
 	const deque<const Card*>& GetHand() const;
 	virtual Action SelectAction(const Field& ref_field) const = 0;
+	virtual Trump SelectSevenEvent() = 0;
 	void SetNowTurn(bool value);
 	void Print(int x, int y) const;
 };
 
+
+
+
+
 Player::Player(string name, IDrawTop& deck) : name(name), hand(), now_turn(false), ref_deck(deck) {
 
 }
+
+const string& Player::GetName() const { return name; }
 
 void Player::Draw(int num) {
 	for (int i = 0; i < num; i++)

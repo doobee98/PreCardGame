@@ -6,7 +6,11 @@ class UserPlayer : public Player {
 public:
 	UserPlayer(string name, IDrawTop& deck);
 	Action SelectAction(const Field& ref_field) const;
+	Trump SelectSevenEvent();
 };
+
+
+
 
 
 UserPlayer::UserPlayer(string name, IDrawTop& deck) : Player(name, deck){ 
@@ -32,3 +36,17 @@ Action UserPlayer::SelectAction(const Field& ref_field) const {
 	}
 }
 
+
+
+Trump UserPlayer::SelectSevenEvent() {
+	Key input = CS::GetKey();
+	switch (input) {
+	case KEY_1: return Trump::SPADE;
+	case KEY_2: return Trump::CLOVER;
+	case KEY_3: return Trump::HEART;
+	case KEY_4: return Trump::DIAMOND;
+	case KEY_S: SortHand();
+
+	default: return SelectSevenEvent();
+	}
+}

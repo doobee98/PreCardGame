@@ -1,4 +1,4 @@
 ﻿  main.cpp
 c:\users\sec\desktop\github\precardgame\onecard\onecard\consoleconfig.h(22): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
-c:\users\sec\desktop\github\precardgame\onecard\onecard\userplayer.h(20): warning C4018: '>=': signed 또는 unsigned가 일치하지 않습니다.
+c:\users\sec\desktop\github\precardgame\onecard\onecard\userplayer.h(24): warning C4018: '>=': signed 또는 unsigned가 일치하지 않습니다.
   OneCard.vcxproj -> C:\Users\sec\Desktop\Github\PreCardGame\OneCard\Debug\OneCard.exe
