@@ -2,7 +2,7 @@
 #include <string>
 
 enum Trump {
-	SPADE, CLOVER, HEART, DIAMOND, JOKER_TRP
+	JOKER_TRP, SPADE, CLOVER, HEART, DIAMOND
 };
 
 enum Number {
@@ -14,6 +14,10 @@ enum Number {
 enum Attack {
 	ACE = 3, TWO = 2, JOKER = 5, UNDEFINED = 0
 	// if Attack Value == 1, invalid
+};
+
+enum class Notice {
+	SEVEN, JACK, QUEEN, KING, NONE
 };
 
 

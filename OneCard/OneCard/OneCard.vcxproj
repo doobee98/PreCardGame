@@ -129,6 +129,7 @@
     <ClInclude Include="Deck.h" />
     <ClInclude Include="Field.h" />
     <ClInclude Include="GameController.h" />
+    <ClInclude Include="IDrawTop.h" />
     <ClInclude Include="IGetStack.h" />
     <ClInclude Include="IOController.h" />
     <ClInclude Include="Player.h" />

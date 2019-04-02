@@ -23,6 +23,15 @@ private:
 	friend ostream& operator<<(ostream& os, const Card& c);
 };
 
+bool compare(const Card* c1, const Card* c2) { // 포인터형 비교
+	if (c1->GetTrump() < c2->GetTrump())
+		return true;
+	else if (c1->GetTrump() > c2->GetTrump())
+		return false;
+	else
+		return c1->GetNumber() < c2->GetNumber();
+}
+
 
 
 

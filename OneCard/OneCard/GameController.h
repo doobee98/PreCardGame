@@ -1,7 +1,8 @@
 #pragma once
 #include <iostream>
 #include <deque>
-#include "Player.h"
+#include "UserPlayer.h"
+#include "AIPlayer.h"
 #include "Deck.h"
 #include "Field.h"
 #include "TurnSystem.h"
@@ -13,8 +14,9 @@ class GameController {
 private:
 	static GameController* instance;
 	GameController();
+	~GameController();
 	
-	deque<Player> players;
+	deque<Player*> players;
 	Field field;
 	Deck deck;
 	TurnSystem& turn;
@@ -43,15 +45,27 @@ GameController::GameController()
 
 }
 
+GameController::~GameController() {
+	auto iter = players.begin();
+	for (; iter != players.end(); iter++)
+		delete *iter;
+}
+
 
 void GameController::Init() {
-	int player_num = io.Init();
-	for (int i = 0; i < player_num; i++) {
-		players.push_back(Player());
-//		players.back().Draw(5);
+	int player_num = io.InitAndGetPlayerNum();
+	turn.SetMaxPlayerNum(player_num);
+
+	players.push_back(new UserPlayer("User", deck));
+	players.back()->Draw(5);
+
+	for (int i = 1; i < player_num; i++) {
+		players.push_back(new AIPlayer("AI@" + to_string(i), deck));
+		players.back()->Draw(5);
 	}
 
 	field.PlayCard(deck.DrawTop());
+	field.NotifySpecial();
 	field.ResetDrawStack();
 }
 
@@ -62,18 +76,28 @@ void GameController::Run() {
 	auto iter = players.begin();
 
 	while (true) {
-		//next player choose -> move iter by turnsystem : turn
-		Player now_player = *iter;
+		iter = turn.NextPlayer(iter);
+		Player& now_player = **iter;
 		io.UserScreen();
-//		now_player.SelectAction();
+		now_player.SelectAction();
 		Key choice = CS::GetKey(); // io에서 getkey와 관련된 함수 만들기
 		
 		//draw
-		//now_player.AddHand(deck.DrawTop());
+		now_player.Draw(field.GetDrawStack());
+		field.ResetDrawStack();
+
 		//playcard
-		//field.PlayCard(now_player.UseCard()); - if seven card played?
+		field.PlayCard(now_player.PopHandCard(0));
+			switch (field.NotifySpecial()) {
+			case Notice::JACK: turn.PlayJ();  break;
+			case Notice::QUEEN: turn.PlayQ(); break;
+			case Notice::KING: turn.PlayK(); break;
+			case Notice::SEVEN: io.SevenEvent();
+			default: turn.PlayDefault(); // case NONE:
+		}
+
 		//sort
-		//now_player.SortHand();
+		now_player.SortHand();
 
 		//check game end
 	}

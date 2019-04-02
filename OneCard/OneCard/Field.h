@@ -10,12 +10,14 @@ private:
 	Trump lead_trump;
 	Number lead_number;
 	int draw_stack;
+	Notice notice;
 
 
 public:
 	Field();
-	void PlayCard(const Card* card); // 7 카드 플레이시, 현재 턴 플레이어 참조하여 색깔 정하게 하기
-	bool CanPlayCard(const Card* card);
+	void PlayCard(const Card* card);
+	bool CanPlayCard(const Card* card) const;
+	Notice NotifySpecial();
 	const Card* GetOpenCard() const;
 	void ResetDrawStack();
 	int GetDrawStack() const;
@@ -28,7 +30,7 @@ private:
 };
 
 
-Field::Field() {
+Field::Field() : lead_trump(JOKER_TRP), lead_number(JOKER_NUM), notice(Notice::NONE) {
 	ResetDrawStack();
 }
 
@@ -36,12 +38,17 @@ Field::Field() {
 void Field::PlayCard(const Card* card) {
 	AddDrawStack(card->GetAttack());
 	SetLead(card->GetTrump(), card->GetNumber());
-	//active card ability (7, j, q, k)
+	switch (lead_number) {
+	case NUM_7: notice = Notice::SEVEN; break;
+	case J: notice = Notice::JACK; break;
+	case Q: notice = Notice::QUEEN; break;
+	case K: notice = Notice::KING; break;
+	}
 	card_used.push(card);
 }
 
 
-bool Field::CanPlayCard(const Card* card) {
+bool Field::CanPlayCard(const Card* card) const {
 	if (draw_stack != 1 && card->GetAttack() == Attack::UNDEFINED) // attack field, but not attack card
 		return false;
 	else {
@@ -50,6 +57,13 @@ bool Field::CanPlayCard(const Card* card) {
 		else
 			return lead_trump == card->GetTrump() || lead_number == card->GetNumber();
 	}
+}
+
+
+Notice Field::NotifySpecial() {
+	Notice message = notice;
+	notice = Notice::NONE;
+	return message;
 }
 
 

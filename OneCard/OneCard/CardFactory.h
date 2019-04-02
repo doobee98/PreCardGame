@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include "Card.h"
-#define MAX_CARD_NUM 54
+#define MAX_CARD_NUM 154
 
 
 class CardFactory {
@@ -33,7 +33,6 @@ CardFactory::~CardFactory() {
 CardFactory& CardFactory::GetInstance() {
 	if (instance == NULL) 
 		instance = new CardFactory();
-	
 	return *instance;
 }
 

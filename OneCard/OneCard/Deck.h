@@ -8,7 +8,7 @@
 #include "IGetStack.h"
 
 
-class Deck : public IPrint {
+class Deck : public IPrint, public IDrawTop {
 private:
 	CardFactory& fac;
 	deque<const Card*> card_deck;

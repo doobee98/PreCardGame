@@ -23,6 +23,6 @@ namespace ViewConfig {
 		enum { WIDTH = 20, HEIGHT = 1, X = GAME::X + 4, Y = GAME::Y + 12 };
 	}
 	namespace USER_HAND {
-		enum { WIDTH = 20, HEIGHT = 5, X = GAME::X + 1, Y = GAME::Y + 16 };
+		enum { WIDTH = 20, HEIGHT = 5, X = GAME::X + 1, Y = GAME::Y + 16, ROW_NUM = 5, COL_NUM = 3 };
 	}
 }
