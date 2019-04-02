@@ -41,7 +41,7 @@ GameController& GameController::GetInstance() {
 }
 
 GameController::GameController() 
-	: players(), field(), deck(field), turn(TurnSystem::GetInstance()), io(players, deck, field) {
+	: players(), field(), deck(field), turn(TurnSystem::GetInstance()), io(players, deck, field, turn) {
 
 }
 
@@ -53,17 +53,21 @@ GameController::~GameController() {
 
 
 void GameController::Init() {
+	// 총 플레이어 인원 입력받기
 	int player_num = io.InitAndGetPlayerNum();
 	turn.SetMaxPlayerNum(player_num);
 
+	// 유저 생성, 드로우
 	players.push_back(new UserPlayer("User", deck));
 	players.back()->Draw(5);
 
+	// ai생성, 드로우
 	for (int i = 1; i < player_num; i++) {
-		players.push_back(new AIPlayer("AI@" + to_string(i), deck));
+		players.push_back(new AIPlayer("Com" + to_string(i), deck));
 		players.back()->Draw(5);
 	}
 
+	// 필드에 1장 오픈
 	field.PlayCard(deck.DrawTop());
 	field.NotifySpecial();
 	field.ResetDrawStack();
@@ -76,29 +80,43 @@ void GameController::Run() {
 	auto iter = players.begin();
 
 	while (true) {
+		// 이번 턴 플레이어 결정
 		iter = turn.NextPlayer(iter);
 		Player& now_player = **iter;
-		io.UserScreen();
-		now_player.SelectAction();
-		Key choice = CS::GetKey(); // io에서 getkey와 관련된 함수 만들기
-		
-		//draw
-		now_player.Draw(field.GetDrawStack());
-		field.ResetDrawStack();
 
-		//playcard
-		field.PlayCard(now_player.PopHandCard(0));
+		// 유저 사이드 스크린
+		io.UserScreen();
+
+		// 플레이어에게 행동 결정받기
+		Action choice = now_player.SelectAction(field);
+
+		// PlayCard
+		if (choice >= HAND1 && choice <= HAND15) {
+			field.PlayCard(now_player.PopHandCard(choice));
 			switch (field.NotifySpecial()) {
 			case Notice::JACK: turn.PlayJ();  break;
 			case Notice::QUEEN: turn.PlayQ(); break;
 			case Notice::KING: turn.PlayK(); break;
 			case Notice::SEVEN: io.SevenEvent();
-			default: turn.PlayDefault(); // case NONE:
+			default: turn.PlayDefault(); // case Notice::NONE:
+			}
 		}
 
-		//sort
-		now_player.SortHand();
-
+		else {
+			switch (choice) {
+			case DRAW: 
+				now_player.Draw(field.GetDrawStack());
+				field.ResetDrawStack();
+				turn.PlayDefault();
+				break;
+			case SORT:
+				now_player.SortHand();
+				continue;
+			default:
+				continue;
+			}
+		}
+	
 		//check game end
 	}
 }

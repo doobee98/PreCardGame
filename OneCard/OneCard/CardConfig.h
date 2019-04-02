@@ -12,7 +12,7 @@ enum Number {
 };
 
 enum Attack {
-	ACE = 3, TWO = 2, JOKER = 5, UNDEFINED = 0
+	ACE = 3, TWO = 2, JOKER = 5, ATK_UNDEFINED = 0
 	// if Attack Value == 1, invalid
 };
 
@@ -38,7 +38,7 @@ namespace CardConfig {
 		case Number::A: return Attack::ACE;
 		case Number::NUM_2: return Attack::TWO;
 		case Number::JOKER_NUM: return Attack::JOKER;
-		default: return Attack::UNDEFINED;
+		default: return Attack::ATK_UNDEFINED;
 		}
 	}
 };

@@ -5,8 +5,8 @@
 #include "ViewConfig.h"
 #include "Player.h"
 #include "Field.h"
-#include "UserPlayer.h"
 #include "IPrint.h"
+#include "TurnSystem.h"
 namespace CS = ConsoleConfig;
 namespace VW = ViewConfig;
 using namespace std;
@@ -16,15 +16,15 @@ class IOController {
 private:
 	const deque<Player*>& players; // deque<IPrint>&로 받는 방법이 있을까?
 	const IPrint& deck;
-	const Field& field;
-	string log;
+	const Field& field; // field.CanPlayCard와 field.Print를 사용해야 함
+	const TurnSystem& turn;
+	string log; // log 출력하기
 
 public:
-	IOController(const deque<Player*>& players, const IPrint& deck, const Field& field);
+	IOController(const deque<Player*>& players, const IPrint& deck, const Field& field, const TurnSystem& turn);
 	int InitAndGetPlayerNum() const; // Get Player Num
 	void UserScreen() const;
 	void SevenEvent() const;
-	Key GetInput() const;
 
 private:
 	void PrintUserHand() const;
@@ -32,8 +32,8 @@ private:
 
 
 
-IOController::IOController(const deque<Player*>& players, const IPrint& deck, const Field& field) :
-	players(players), deck(deck), field(field), log() { 
+IOController::IOController(const deque<Player*>& players, const IPrint& deck, const Field& field, const TurnSystem& turn) :
+	players(players), deck(deck), field(field), turn(turn), log() { 
 }
 
 int IOController::InitAndGetPlayerNum() const {
@@ -62,6 +62,8 @@ void IOController::UserScreen() const {
 		w += VW::AI::WIDTH + 2;
 	}
 	
+	string dir_string = turn.GetDirection() == Direction::CLOCKWISE ? "--->" : "<---";
+	CS::XYPrint(VW::TURNDIR::X, VW::TURNDIR::Y, dir_string);
 	deck.Print(VW::DECK::X, VW::DECK::Y);
 	field.Print(VW::FIELD::X, VW::FIELD::Y);
 	PrintUserHand();
@@ -70,15 +72,6 @@ void IOController::UserScreen() const {
 
 void IOController::SevenEvent() const {
 
-}
-
-
-Key IOController::GetInput() const {
-	Key temp = CS::GetKey();
-	if (temp >= Key::KEY_1 && temp <= Key::KEY_0) { // 1<= k <= 10
-		//which act?
-	}
-	return Key::KEY_UNDEFINED;
 }
 
 
@@ -92,12 +85,20 @@ void IOController::PrintUserHand() const {
 
 	for (int x = 0, y = 0; iter != user_hand.end(); x++, y++, iter++) {
 		const Card* temp = *iter;
-		CS::GotoXY(base_x + (x / VW::USER_HAND::ROW_NUM) * 10 , base_y + (y % VW::USER_HAND::ROW_NUM));
-		cout.width(2); cout.fill(' ');
-		if (field.CanPlayCard(temp))
-			cout << card_num;
+		CS::GotoXY(base_x + (x / VW::USER_HAND::ROW_NUM) * 9 , base_y + (y % VW::USER_HAND::ROW_NUM));
+		if (field.CanPlayCard(temp)) {
+			switch (card_num) {
+			case 10: cout << '0'; break;
+			case 11: cout << 'Q'; break;
+			case 12: cout << 'W'; break;
+			case 13: cout << 'E'; break;
+			case 14: cout << 'R'; break;
+			case 15: cout << 'T'; break;
+			default: cout << card_num; break;
+			}
+		}
 		else
-			cout << "";
+			cout << ' ';
 		++card_num;
 		cout << " " << *temp;
 	}

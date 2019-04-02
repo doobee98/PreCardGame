@@ -5,13 +5,14 @@
 class AIPlayer : public Player {
 public:
 	AIPlayer(string name, IDrawTop& deck);
-	Key SelectAction() const;
+	Action SelectAction(const Field& ref_field) const;
 };
 
 AIPlayer::AIPlayer(string name, IDrawTop& deck) : Player(name, deck) {
 
 }
 
-Key AIPlayer::SelectAction() const {
-	return Key::KEY_UNDEFINED;
+Action AIPlayer::SelectAction(const Field& ref_field) const {
+	CS::GetKey();
+	return Action::DRAW;
 }

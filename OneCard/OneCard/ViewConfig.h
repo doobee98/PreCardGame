@@ -16,6 +16,9 @@ namespace ViewConfig {
 	namespace FIELD {
 		enum { WIDTH = 18, HEIGHT = 1, X = GAME::X + 9, Y = GAME::Y + 5 };
 	}
+	namespace TURNDIR {
+		enum { WIDTH = 4, HEIGHT = 1, X = GAME::X + 9, Y = GAME::Y + 4};
+	}
 	namespace USER {
 		enum { WIDTH = 5, HEIGHT = 2, X = GAME::X + 8, Y = GAME::Y + 8 };
 	}

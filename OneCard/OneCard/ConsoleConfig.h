@@ -12,8 +12,8 @@ enum class Color {
 
 enum Key {
 	KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0,
-	KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_S,
-	KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_ESC, KEY_UNDEFINED
+	KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, 
+	KEY_S, KEY_D, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_ESC, KEY_UNDEFINED
 };
 
 
@@ -60,7 +60,8 @@ namespace ConsoleConfig {
 		case 'q': return KEY_Q; case 'w': return KEY_W;
 		case 'e': return KEY_E; case 'r': return KEY_R;
 		case 't': return KEY_T; case 's': return KEY_S;
-		case 27: return KEY_ESC; default: return KEY_UNDEFINED;
+		case 'd': return KEY_D;	case 27: return KEY_ESC; 
+		default: return KEY_UNDEFINED;
 		}
 	}
 };

@@ -21,6 +21,7 @@ private:
 
 public:
 	static TurnSystem& GetInstance();
+	Direction GetDirection() const;
 	void SetMaxPlayerNum(int num);
 	DPITER& NextPlayer(DPITER& iter);
 	void PlayJ();
@@ -45,6 +46,11 @@ TurnSystem::TurnSystem(): dir(CLOCKWISE), now_player_loc(0), next_player_change(
 }
 
 TurnSystem::~TurnSystem() {}
+
+
+Direction TurnSystem::GetDirection() const {
+	return dir;
+}
 
 
 void TurnSystem::SetMaxPlayerNum(int num) {

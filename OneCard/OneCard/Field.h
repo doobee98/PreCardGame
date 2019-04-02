@@ -49,7 +49,7 @@ void Field::PlayCard(const Card* card) {
 
 
 bool Field::CanPlayCard(const Card* card) const {
-	if (draw_stack != 1 && card->GetAttack() == Attack::UNDEFINED) // attack field, but not attack card
+	if (draw_stack != 1 && card->GetAttack() == Attack::ATK_UNDEFINED) // attack field, but not attack card
 		return false;
 	else {
 		if (lead_trump == Trump::JOKER_TRP || card->GetTrump() == Trump::JOKER_TRP)
@@ -83,7 +83,7 @@ int Field::GetDrawStack() const {
 
 
 void Field::AddDrawStack(Attack atk) {
-	if (atk != Attack::UNDEFINED) {
+	if (atk != Attack::ATK_UNDEFINED) {
 		if (draw_stack == 1)
 			draw_stack = 0;
 		draw_stack += atk;
