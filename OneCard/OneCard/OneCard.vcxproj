@@ -131,6 +131,8 @@
     <ClInclude Include="GameController.h" />
     <ClInclude Include="IDrawTop.h" />
     <ClInclude Include="IGetStack.h" />
+    <ClInclude Include="Screen.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="ViewController.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="IPrint.h" />

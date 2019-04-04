@@ -120,8 +120,7 @@ stack<const Card*>* Field::GetStack() {
 
 void Field::Print(int x, int y) const {
 	// 오픈 카드
-	ConsoleConfig::GotoXY(x, y);
-	cout << *GetOpenCard();
+	GetOpenCard()->Print(x, y);
 
 	// 펼쳐진 카드가 7이면, lead trump가 바뀌었을 수 있으므로 표시해줌
 	if(GetOpenCard()->GetNumber() == Number::NUM_7)

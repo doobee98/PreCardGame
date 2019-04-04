@@ -31,7 +31,7 @@ public:
 	void SortHand();
 	const deque<const Card*>& GetHand() const;
 	virtual Action SelectAction(const Field& ref_field) const = 0;
-	virtual Trump SelectSevenEvent() = 0;
+	virtual Key SelectSevenEvent() = 0;
 	void SetNowTurn(bool value);
 	void Print(int x, int y) const;
 };

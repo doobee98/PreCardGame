@@ -7,6 +7,7 @@
 #include "Field.h"
 #include "IPrint.h"
 #include "TurnSystem.h"
+#include "Timer.h"
 namespace CS = ConsoleConfig;
 namespace VW = ViewConfig;
 using namespace std;
@@ -18,10 +19,12 @@ private:
 	const IPrint& deck;
 	const Field& field; // field.CanPlayCard와 field.Print를 사용해야 함
 	const TurnSystem& turn;
+	const Timer& timer;
 	string log; // log 출력하기
 
 public:
-	ViewController(const deque<Player*>& players, const IPrint& deck, const Field& field, const TurnSystem& turn);
+	ViewController(const deque<Player*>& players, const IPrint& deck, const Field& field, const TurnSystem& turn, const Timer& timer);
+	~ViewController();
 	int InitAndGetPlayerNum() const; // Get Player Num
 	void UserScreen() const;
 	void UpdateLog(const string s);
@@ -32,22 +35,35 @@ private:
 
 
 
-ViewController::ViewController(const deque<Player*>& players, const IPrint& deck, const Field& field, const TurnSystem& turn) :
-	players(players), deck(deck), field(field), turn(turn), log("Start Game!") { 
+ViewController::ViewController(const deque<Player*>& players, const IPrint& deck, const Field& field, const TurnSystem& turn, const Timer& timer) :
+	players(players), 
+	deck(deck), 
+	field(field), 
+	turn(turn), 
+	timer(timer), 
+	log("Start Game!") { 
+}
+
+ViewController::~ViewController() {
+	CS::ConsoleClose();
 }
 
 int ViewController::InitAndGetPlayerNum() const {
-	CS::XYPrint(5, 2, "Project OneCard SingleGame (Made by 2doo)");
-	CS::XYPrint(5, 3, "How many AI players? (1 ~ 3) : ");
+	CS::ConsoleStart();
 
-	int input;
-	cin >> input;
-	if (input >= 1 && input <= 3) 
-		return input + 1;
-	else {
-		CS::Clrscr();
-		CS::XYPrint(5, 1, "Range Off!");
-		return InitAndGetPlayerNum();
+	while (true) {
+		CS::XYPrint(5, 2, "Project OneCard SingleGame (Made by 2doo)");
+		CS::XYPrint(5, 3, "How many AI players? (1 ~ 3) : ");
+		CS::ConsoleActiveScreen();
+
+		Key input = CS::GetKey();
+
+		if (input >= KEY_1 && input <= KEY_3)
+			return input + 2; // KEY DIFF : 1, USER PLAYER : 1 TOTAL 2
+		else {
+			CS::Clrscr();
+			CS::XYPrint(5, 1, "Range Off!");
+		}
 	}
 }
 
@@ -78,7 +94,16 @@ void ViewController::UserScreen() const {
 
 	// Print Field Info : Open Card, Lead Trump, Atk Stack
 	field.Print(VW::FIELD::X, VW::FIELD::Y);
+
+	// Print Timer
+	timer.Print(VW::TIMER::X, VW::TIMER::Y);
+
+	//Print User Hand;
 	PrintUserHand();
+
+
+	// Active ScreenBuffer
+	CS::ConsoleActiveScreen();
 }
 
 
@@ -96,21 +121,22 @@ void ViewController::PrintUserHand() const {
 
 	for (int x = 0, y = 0; iter != user_hand.end(); x++, y++, iter++) {
 		const Card* temp = *iter;
-		CS::GotoXY(base_x + (x / VW::USER_HAND::ROW_NUM) * 9 , base_y + (y % VW::USER_HAND::ROW_NUM));
+		int _x = base_x + (x / VW::USER_HAND::ROW_NUM) * 9;
+		int _y = base_y + (y % VW::USER_HAND::ROW_NUM);
+
 		if (field.CanPlayCard(temp)) {
 			switch (card_num) {
-			case 10: cout << '0'; break;
-			case 11: cout << 'Q'; break;
-			case 12: cout << 'W'; break;
-			case 13: cout << 'E'; break;
-			case 14: cout << 'R'; break;
-			case 15: cout << 'T'; break;
-			default: cout << card_num; break;
+			case 10: CS::XYPrint(_x, _y, "0"); break;
+			case 11: CS::XYPrint(_x, _y, "Q"); break;
+			case 12: CS::XYPrint(_x, _y, "W"); break;
+			case 13: CS::XYPrint(_x, _y, "E"); break;
+			case 14: CS::XYPrint(_x, _y, "R"); break;
+			case 15: CS::XYPrint(_x, _y, "T"); break;
+			default: CS::XYPrint(_x, _y, to_string(card_num)); break;
 			}
 		}
-		else
-			cout << ' ';
+
 		++card_num;
-		cout << " " << *temp;
+		temp->Print(_x + 2, _y);
 	}
 }

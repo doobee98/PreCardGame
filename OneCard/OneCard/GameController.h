@@ -6,6 +6,7 @@
 #include "Deck.h"
 #include "Field.h"
 #include "TurnSystem.h"
+#include "Timer.h"
 #include "ViewController.h"
 using namespace std;
 
@@ -20,6 +21,7 @@ private:
 	Field field;
 	Deck deck;
 	TurnSystem& turn;
+	Timer timer;
 
 	ViewController view;
 
@@ -29,7 +31,8 @@ public:
 	void Run();
 
 private:
-	void SevenEvent();
+	Trump SevenEvent(Player& now_player);
+	const Player* CheckEnd() const;
 	string MakePlayingLog(const Player& now_player, const Card* playing_card);
 };
 
@@ -45,7 +48,12 @@ GameController& GameController::GetInstance() {
 }
 
 GameController::GameController() 
-	: players(), field(), deck(field), turn(TurnSystem::GetInstance()), view(players, deck, field, turn) {
+	: players(), 
+	field(), 
+	deck(field), 
+	turn(TurnSystem::GetInstance()), 
+	timer(), 
+	view(players, deck, field, turn, timer) {
 
 }
 
@@ -82,6 +90,7 @@ void GameController::Run() {
 	Init();
 
 	auto iter = players.begin();
+	timer.ResetTimer();
 
 	while (true) {
 		// 이번 턴 플레이어 결정
@@ -91,55 +100,114 @@ void GameController::Run() {
 		// 유저 사이드 스크린
 		view.UserScreen();
 
-		// 필드를 본 플레이어에게 행동 결정받기
-		Action choice = now_player.SelectAction(field);
+		if (_kbhit()) {
+			// 필드를 본 플레이어에게 행동 결정받기
+			Action choice = now_player.SelectAction(field);
 
-		// PlayCard
-		if (choice >= HAND1 && choice <= HAND15) {
-			const Card* playing_card = now_player.PopHandCard(choice);
-			field.PlayCard(playing_card);
-			view.UpdateLog(MakePlayingLog(static_cast<const Player&>(now_player), playing_card));
-			switch (field.NotifySpecial()) {
-			case Notice::JACK: turn.PlayJ();  break;
-			case Notice::QUEEN: turn.PlayQ(); break;
-			case Notice::KING: turn.PlayK(); break;
-			case Notice::SEVEN: {
-				SevenEvent();
-				Trump choice_trump = now_player.SelectSevenEvent();
-				field.SetLead(choice_trump, Number::NUM_7);
-				view.UpdateLog(now_player.GetName() + " changes lead trump.");
+			// PlayCard
+			if (choice >= HAND1 && choice <= HAND15) {
+				const Card* playing_card = now_player.PopHandCard(choice);
+				field.PlayCard(playing_card);
+				view.UpdateLog(MakePlayingLog(static_cast<const Player&>(now_player), playing_card));
+				switch (field.NotifySpecial()) {
+				case Notice::JACK: turn.PlayJ();  break;
+				case Notice::QUEEN: turn.PlayQ(); break;
+				case Notice::KING: turn.PlayK(); break;
+				case Notice::SEVEN: {
+					Trump choice_trump = SevenEvent(now_player);
+					field.SetLead(choice_trump, Number::NUM_7);
+					view.UpdateLog(now_player.GetName() + " changes lead trump.");
+				}
+				default: turn.PlayDefault(); // case Notice::NONE:
+				}
+
+				timer.ResetTimer();
 			}
-			default: turn.PlayDefault(); // case Notice::NONE:
+
+			// Draw, Sort, etc
+			else {
+				switch (choice) {
+				case DRAW: {
+					int num = field.GetDrawStack();
+					now_player.Draw(num);
+					field.ResetDrawStack();
+					turn.PlayDefault();
+					timer.ResetTimer();
+					view.UpdateLog(now_player.GetName() + " draws " + to_string(num) + " cards.");
+					break;
+				}
+				case SORT:
+					now_player.SortHand();
+					continue; // 턴이 바뀌지 않은 채로 userscreen을 다시 띄운다.
+				default:
+					continue;
+				}
 			}
 		}
 
-		// Draw, Sort, etc
-		else {
-			switch (choice) {
-			case DRAW: {
-				int num = field.GetDrawStack();
-				now_player.Draw(num);
-				field.ResetDrawStack();
-				turn.PlayDefault();
-				view.UpdateLog(now_player.GetName() + " draws " + to_string(num) + " cards.");
-				break;
-			}
-			case SORT:
-				now_player.SortHand();
-				continue; // 턴이 바뀌지 않은 채로 userscreen을 다시 띄운다.
-			default:
-				continue;
-			}
+		else if(timer.IsTimerOver()){
+			// 타이머 종료시 까지 다른 액션이 없다면 강제로 드로우
+			int num = field.GetDrawStack();
+			now_player.Draw(num);
+			field.ResetDrawStack();
+			turn.PlayDefault();
+			view.UpdateLog(now_player.GetName() + " draws " + to_string(num) + " cards.");
+			timer.ResetTimer();
 		}
+
+		if (CheckEnd() != NULL)
+			break;
+
+		Sleep(20);
+	}
+
+	const Player& winner = *CheckEnd(); // const 함수여서 다시 호출하여도 같은 값
+	view.UpdateLog("Winner : " + winner.GetName() + "!");
+	view.UserScreen();
+	ConsoleConfig::GetKey();
+}
+
+
+Trump GameController::SevenEvent(Player& now_player) {
+	view.UpdateLog("1. Spade, 2. Clover, \n 3. Heart, 4. Diamond");
 	
-		//check game end
+	while (true) {
+		view.UserScreen();
+
+		if (_kbhit()) {
+			Key input = now_player.SelectSevenEvent();
+			switch (input) {
+			case KEY_1: return SPADE;
+			case KEY_2: return CLOVER;
+			case KEY_3: return HEART;
+			case KEY_4: return DIAMOND;
+			default: break;
+			}
+		}
+
+		else if (timer.IsTimerOver()) {
+			return (Trump)(rand() % 4 + 1);
+		}
+
+		Sleep(20);
+	}
+
+
+
+	while (_kbhit() || timer.IsTimerOver() ) {
+		view.UserScreen();
+		Sleep(20);
 	}
 }
 
 
-void GameController::SevenEvent() {
-	view.UpdateLog("1. Spade, 2. Clover, \n 3. Heart, 4. Diamond");
-	view.UserScreen();
+const Player* GameController::CheckEnd() const {
+	auto iter = players.begin();
+	for (; iter != players.end(); iter++) 
+		if ((**iter).GetHand().size() == 0)
+			return *iter;
+	
+	return NULL;
 }
 
 

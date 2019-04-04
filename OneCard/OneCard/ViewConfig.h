@@ -28,4 +28,7 @@ namespace ViewConfig {
 	namespace USER_HAND {
 		enum { WIDTH = 20, HEIGHT = 5, X = GAME::X + 1, Y = GAME::Y + 14, ROW_NUM = 5, COL_NUM = 3 };
 	}
+	namespace TIMER {
+		enum { WIDTH = 8, HEIGHT = 5, X = GAME::X + 23, Y = GAME::Y };
+	}
 }

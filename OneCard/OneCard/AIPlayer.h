@@ -8,7 +8,7 @@ class AIPlayer : public Player {
 public:
 	AIPlayer(string name, IDrawTop& deck);
 	Action SelectAction(const Field& ref_field) const;
-	Trump SelectSevenEvent();
+	Key SelectSevenEvent();
 };
 
 
@@ -46,11 +46,11 @@ Action AIPlayer::SelectAction(const Field& ref_field) const {
 }
 
 
-Trump AIPlayer::SelectSevenEvent(){
+Key AIPlayer::SelectSevenEvent(){
 	CS::GetKey(); // 시간제한이 아직 없으므로 wait하도록 함
 	/*
 	AI 메커니즘 SelectSeven ver 1.0
 	1. 넷 중 랜덤으로 반환
 	*/
-	return (Trump)(rand() % 4 + 1);
+	return (Key)(rand() % 4 + 1);
 }

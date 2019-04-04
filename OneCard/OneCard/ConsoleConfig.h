@@ -1,8 +1,10 @@
 #pragma once
 #include <iostream>
+#include <vector>
 #include <conio.h>
 #include <Windows.h>
 #include <string>
+#include "Screen.h"
 
 enum class Color {
 	BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN,
@@ -18,25 +20,34 @@ enum Key {
 
 
 namespace ConsoleConfig {
+	void ConsoleStart() { Screen::ScreenInit(); }
+	void ConsoleClose() { Screen::ScreenRelease(); }
+	void ConsoleActiveScreen() { Screen::ScreenFlipping(); }
+
 	void GotoXY(int x, int y) {
-		COORD pos = { x,y };
-		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+		Screen::ScreenGotoXY(x, y);
 	}
 
 	void XYPrint(int x, int y, std::string str) {
-		GotoXY(x, y);
-		std::cout << str;
+		std::vector<char> temp(str.begin(), str.end());
+		temp.push_back('\0');
+		char* ptr = &temp[0];
+
+		Screen::ScreenPrint(x, y, ptr);
 	}
 
 	void SetColor(Color _color = Color::LIGHTGRAY, Color _bgcolor = Color::BLACK) {
-		int color = (int)_color;
-		int bgcolor = (int)_bgcolor;
+		unsigned short color = (unsigned short)_color;
+		unsigned short bgcolor = (unsigned short)_bgcolor;
 		color &= 0xf;
 		bgcolor &= 0xf;
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (bgcolor << 4) | color);
+
+		Screen::SetColor((bgcolor << 4) | color);
 	}
 
-	void Clrscr() { system("cls"); }
+	void Clrscr() { 
+		Screen::ScreenClear(); 
+	}
 
 	Key GetKey() {
 		int key = _getch();

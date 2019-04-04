@@ -2,6 +2,7 @@
 #include <iostream>
 #include "CardConfig.h"
 #include "ConsoleConfig.h"
+#include "IPrint.h"
 using namespace std;
 
 
@@ -16,11 +17,12 @@ public:
 	Trump GetTrump() const;
 	Number GetNumber() const;
 	Attack GetAttack() const;
+	void Print(int x, int y) const;
 
 private:
 	bool CheckValid() const;
 
-	friend ostream& operator<<(ostream& os, const Card& c);
+	//friend ostream& operator<<(ostream& os, const Card& c);
 };
 
 bool compare(const Card* c1, const Card* c2) { // 포인터형 비교
@@ -52,6 +54,36 @@ bool Card::CheckValid() const {
 		return num != JOKER_NUM;
 }
 
+
+void Card::Print(int x, int y) const {
+	switch (trp) {
+	case JOKER_TRP:
+		ConsoleConfig::SetColor(Color::YELLOW);
+		ConsoleConfig::XYPrint(x, y, "JOKER");
+		ConsoleConfig::SetColor();
+		return;
+
+	case HEART: case DIAMOND:
+		ConsoleConfig::SetColor(Color::LIGHTRED); break;
+	case SPADE: case CLOVER:
+		ConsoleConfig::SetColor(Color::DARKGRAY); break;
+	}
+
+	ConsoleConfig::XYPrint(x, y, CardConfig::TrumpToString(trp));
+
+
+	switch (num) {
+	case A: ConsoleConfig::XYPrint(x + 4, y, "A"); break;
+	case J: ConsoleConfig::XYPrint(x + 4, y, "J"); break;
+	case Q: ConsoleConfig::XYPrint(x + 4, y, "Q"); break;
+	case K: ConsoleConfig::XYPrint(x + 4, y, "K"); break;
+	case 10: ConsoleConfig::XYPrint(x + 3, y, "10"); break;
+	default: ConsoleConfig::XYPrint(x + 4, y, to_string(num)); break;
+	}
+
+	ConsoleConfig::SetColor();
+}
+/*
 ostream& operator<<(ostream& os, const Card& c) {
 	switch (c.trp) {
 	case JOKER_TRP:
@@ -79,3 +111,5 @@ ostream& operator<<(ostream& os, const Card& c) {
 	ConsoleConfig::SetColor();
 	return os;
 }
+
+*/

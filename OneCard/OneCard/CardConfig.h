@@ -16,7 +16,7 @@ enum Attack {
 	// if Attack Value == 1, invalid
 };
 
-enum class Notice {
+enum class Notice { // special card
 	SEVEN, JACK, QUEEN, KING, NONE
 };
 
