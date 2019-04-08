@@ -49,6 +49,12 @@ namespace ConsoleConfig {
 		Screen::ScreenClear(); 
 	}
 
+	void Flush() {
+		while (_kbhit()) {
+			_getch();
+		}
+	}
+
 	Key GetKey() {
 		int key = _getch();
 		if (key == 0) {

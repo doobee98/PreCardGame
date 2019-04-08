@@ -1,10 +1,13 @@
 #pragma once
 #include "Player.h"
+#include "Timer.h"
 #include "cstdlib"
 #include "ctime"
 
 
 class AIPlayer : public Player {
+private:
+	Timer timer; // 컴퓨터의 자동 시간 배분. 밑의 Sleep을 대체하여야 함
 public:
 	AIPlayer(string name, IDrawTop& deck);
 	Action SelectAction(const Field& ref_field) const;
@@ -16,12 +19,13 @@ public:
 
 
 
-AIPlayer::AIPlayer(string name, IDrawTop& deck) : Player(name, deck) {
+AIPlayer::AIPlayer(string name, IDrawTop& deck) : Player(name, deck), timer(RuleConfig::BASE_TIMER){
 	srand((unsigned int)time(NULL));
 }
 
 Action AIPlayer::SelectAction(const Field& ref_field) const {
-	CS::GetKey(); // 시간제한이 아직 없으므로 wait하도록 함
+	Sleep(1000);
+	ConsoleConfig::Flush();
 	/*
 	AI 메커니즘 SelectAction ver 1.0
 	0. 일단 sort - !!! 안됨, sort가 const 메소드가 아님
@@ -47,7 +51,8 @@ Action AIPlayer::SelectAction(const Field& ref_field) const {
 
 
 Key AIPlayer::SelectSevenEvent(){
-	CS::GetKey(); // 시간제한이 아직 없으므로 wait하도록 함
+	Sleep(1000);
+	ConsoleConfig::Flush();
 	/*
 	AI 메커니즘 SelectSeven ver 1.0
 	1. 넷 중 랜덤으로 반환

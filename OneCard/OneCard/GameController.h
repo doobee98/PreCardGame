@@ -8,6 +8,7 @@
 #include "TurnSystem.h"
 #include "Timer.h"
 #include "ViewController.h"
+#include "CircularNode.h"
 using namespace std;
 
 
@@ -32,7 +33,7 @@ public:
 
 private:
 	Trump SevenEvent(Player& now_player);
-	const Player* CheckEnd() const;
+	bool CheckEnd();
 	string MakePlayingLog(const Player& now_player, const Card* playing_card);
 };
 
@@ -52,12 +53,13 @@ GameController::GameController()
 	field(), 
 	deck(field), 
 	turn(TurnSystem::GetInstance()), 
-	timer(), 
+	timer(RuleConfig::BASE_TIMER), 
 	view(players, deck, field, turn, timer) {
 
 }
 
 GameController::~GameController() {
+	// Player 포인터 메모리 해제
 	auto iter = players.begin();
 	for (; iter != players.end(); iter++)
 		delete *iter;
@@ -89,18 +91,34 @@ void GameController::Init() {
 void GameController::Run() {
 	Init();
 
-	auto iter = players.begin();
+	// active_player deque를 참조자로 선언하여 따로 만들어줌
+	// 파산하여 Lose한 플레이어를 active player에서 제외하여 플레이하기 위해서
+	deque< CircularNode<Player*> > active_players;
+	for (auto iter = players.begin(); iter != players.end(); iter++) 
+		active_players.push_back(CircularNode<Player*>(*iter));
+
+	int temp_size = active_players.size();
+	for (int i = 0; i < temp_size; i++) {
+		active_players.at(i).prev = &(active_players.at((i - 1 + temp_size) % temp_size));
+		active_players.at(i).next = &(active_players.at((i + 1) % temp_size));
+	}
+
+
+	//auto iter = active_players.begin();
+	CircularNode<Player*>* cir_iter = &(active_players.at(0));
 	timer.ResetTimer();
 
+	// 매턴 while문 한바퀴
 	while (true) {
+
 		// 이번 턴 플레이어 결정
-		iter = turn.NextPlayer(iter);
-		Player& now_player = **iter;
+		cir_iter = turn.NextPlayer(cir_iter);
+		Player& now_player = **cir_iter;
 
 		// 유저 사이드 스크린
 		view.UserScreen();
 
-		if (_kbhit()) {
+		
 			// 필드를 본 플레이어에게 행동 결정받기
 			Action choice = now_player.SelectAction(field);
 
@@ -109,62 +127,102 @@ void GameController::Run() {
 				const Card* playing_card = now_player.PopHandCard(choice);
 				field.PlayCard(playing_card);
 				view.UpdateLog(MakePlayingLog(static_cast<const Player&>(now_player), playing_card));
-				switch (field.NotifySpecial()) {
-				case Notice::JACK: turn.PlayJ();  break;
-				case Notice::QUEEN: turn.PlayQ(); break;
-				case Notice::KING: turn.PlayK(); break;
-				case Notice::SEVEN: {
-					Trump choice_trump = SevenEvent(now_player);
-					field.SetLead(choice_trump, Number::NUM_7);
-					view.UpdateLog(now_player.GetName() + " changes lead trump.");
-				}
-				default: turn.PlayDefault(); // case Notice::NONE:
-				}
 
-				timer.ResetTimer();
+				// 카드를 냈는데 남은 카드가 없다면 status를 win으로 수정하고 반복문 탈출 (게임 종료)
+				if (now_player.GetHand().size() == 0) {
+					now_player.SetStatus(Player_Status::WIN);
+					break; // while(true) 탈출 문장
+				}
+				
+				else {
+					switch (field.NotifySpecial()) {
+					case Notice::JACK: turn.PlayJ();  break;
+					case Notice::QUEEN: turn.PlayQ(); break;
+					case Notice::KING: turn.PlayK(); break;
+					case Notice::SEVEN: {
+						Trump choice_trump = SevenEvent(now_player);
+						field.SetLead(choice_trump, Number::NUM_7);
+						view.UpdateLog(now_player.GetName() + " changes lead trump.");
+					}
+					default: turn.PlayDefault(); // case Notice::NONE:
+					}
+
+					timer.ResetTimer();
+				}
 			}
 
 			// Draw, Sort, etc
 			else {
 				switch (choice) {
 				case DRAW: {
-					int num = field.GetDrawStack();
-					now_player.Draw(num);
+					int draw_num = field.GetDrawStack();
+					now_player.Draw(draw_num);
 					field.ResetDrawStack();
 					turn.PlayDefault();
 					timer.ResetTimer();
-					view.UpdateLog(now_player.GetName() + " draws " + to_string(num) + " cards.");
+
+					// 카드를 드로우했는데 hand_max_card를 넘을 경우 파산으로 취급하고 게임에서 제외함
+					if (now_player.GetHand().size() >= RuleConfig::BASE_MAX_HAND) {
+						now_player.SetStatus(Player_Status::LOSE);
+						// 들고 있던 카드를 모두 반납
+						auto lose_hand = now_player.GetHand();
+						for(auto iter = lose_hand.begin(); iter != lose_hand.end(); iter++)
+							deck.AddCard(*iter);		
+						
+						now_player.ClearHand();
+
+						// 없어지는 플레이어의 다음 턴 플레이어를 지정
+						(*cir_iter).next->prev = (*cir_iter).prev;
+						(*cir_iter).prev->next = (*cir_iter).next;
+						view.UpdateLog(now_player.GetName() + " BANKRUPT!");
+					}
+					else {
+						view.UpdateLog(now_player.GetName() + " draws " + to_string(draw_num) + " cards.");
+					}
 					break;
 				}
 				case SORT:
+					// sort는 타이머를 리셋하지 않고, hand만 sort하고 다시 기다림
 					now_player.SortHand();
-					continue; // 턴이 바뀌지 않은 채로 userscreen을 다시 띄운다.
-				default:
-					continue;
+					break;
+
+				default: break;
 				}
 			}
-		}
+		
 
-		else if(timer.IsTimerOver()){
+		if(timer.IsTimerOver()){
 			// 타이머 종료시 까지 다른 액션이 없다면 강제로 드로우
-			int num = field.GetDrawStack();
-			now_player.Draw(num);
+			// case DRAW: 와 같음
+			int draw_num = field.GetDrawStack();
+			now_player.Draw(draw_num);
 			field.ResetDrawStack();
 			turn.PlayDefault();
-			view.UpdateLog(now_player.GetName() + " draws " + to_string(num) + " cards.");
 			timer.ResetTimer();
-		}
+			view.UpdateLog(now_player.GetName() + " draws " + to_string(draw_num) + " cards.");
+		}	
 
-		if (CheckEnd() != NULL)
+		if (CheckEnd() == true)
 			break;
 
 		Sleep(20);
 	}
 
-	const Player& winner = *CheckEnd(); // const 함수여서 다시 호출하여도 같은 값
-	view.UpdateLog("Winner : " + winner.GetName() + "!");
-	view.UserScreen();
-	ConsoleConfig::GetKey();
+
+	//winner를 찾아 winner 선언후 run 종료
+	for (auto iter = players.begin(); iter != players.end(); iter++) {
+		if ((**iter).GetStatus() == Player_Status::WIN) {
+			const Player& winner = **iter;
+			view.UpdateLog("Winner : " + winner.GetName() + "!");
+			view.UserScreen();
+			ConsoleConfig::GetKey();
+
+			return;
+		}
+	}
+
+	// return이 되지 않은 경우 winner가 존재하지 않는 경우이므로 논리적 버그
+	throw "GameController::Run - winner가 존재하지 않습니다.";
 }
 
 
@@ -173,41 +231,44 @@ Trump GameController::SevenEvent(Player& now_player) {
 	
 	while (true) {
 		view.UserScreen();
-
-		if (_kbhit()) {
-			Key input = now_player.SelectSevenEvent();
-			switch (input) {
-			case KEY_1: return SPADE;
-			case KEY_2: return CLOVER;
-			case KEY_3: return HEART;
-			case KEY_4: return DIAMOND;
-			default: break;
-			}
+		
+		Key input = now_player.SelectSevenEvent();
+		switch (input) {
+		case KEY_1: return SPADE;
+		case KEY_2: return CLOVER;
+		case KEY_3: return HEART;
+		case KEY_4: return DIAMOND;
+		default: break;
 		}
 
-		else if (timer.IsTimerOver()) {
+		if (timer.IsTimerOver()) {
 			return (Trump)(rand() % 4 + 1);
 		}
 
 		Sleep(20);
 	}
-
-
-
-	while (_kbhit() || timer.IsTimerOver() ) {
-		view.UserScreen();
-		Sleep(20);
-	}
 }
 
 
-const Player* GameController::CheckEnd() const {
-	auto iter = players.begin();
-	for (; iter != players.end(); iter++) 
-		if ((**iter).GetHand().size() == 0)
-			return *iter;
-	
-	return NULL;
+bool GameController::CheckEnd(){
+	int playing_player_num = 0;
+	for (auto iter = players.begin(); iter != players.end(); iter++) {
+		if ((**iter).GetStatus() == Player_Status::WIN)
+			return true;
+		else if ((**iter).GetStatus() == Player_Status::PLAYING)
+			playing_player_num++;
+	}
+
+	// 플레이 하는 인원이 1명이면(나머지 플레이어가 모두 탈락했으면) 게임 종료
+	if (playing_player_num != 1) return false;
+	else {
+		for (auto iter = players.begin(); iter != players.end(); iter++) {
+			if ((**iter).GetStatus() == Player_Status::PLAYING) {
+				(**iter).SetStatus(Player_Status::WIN);
+				return true;
+			}
+		}
+	}
 }
 
 

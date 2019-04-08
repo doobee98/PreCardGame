@@ -1,8 +1,9 @@
 #pragma once
 #include <deque>
 #include "Player.h"
+#include "CircularNode.h"
 
-#define DPITER deque<Player*>::iterator
+#define DPITER deque< CircularNode<Player*> >::iterator
 
 enum Direction {
 	CLOCKWISE = 1, ANTICLOCKWISE = -1
@@ -23,11 +24,12 @@ public:
 	static TurnSystem& GetInstance();
 	Direction GetDirection() const;
 	void SetMaxPlayerNum(int num);
-	DPITER& NextPlayer(DPITER& iter);
+	CircularNode<Player*>* NextPlayer(CircularNode<Player*>* now_player);
 	void PlayJ();
 	void PlayQ();
 	void PlayK();
 	void PlayDefault();
+	void RemoveNow();
 	
 private:
 	void SetNextPlayerChange(int num);
@@ -61,7 +63,21 @@ void TurnSystem::SetMaxPlayerNum(int num) {
 }
 
 
-DPITER& TurnSystem::NextPlayer(DPITER& iter) {
+CircularNode<Player*>* TurnSystem::NextPlayer(CircularNode<Player*>* now_player) {
+	(**now_player).SetNowTurn(false);
+
+	CircularNode<Player*>* next_player = now_player;
+	if (next_player_change >= 0) {
+		for (int i = 0; i < next_player_change; i++, next_player = next_player->next);
+	}
+	else {
+		for (int i = 0; i > next_player_change; i--, next_player = next_player->prev);
+	}
+	(**next_player).SetNowTurn(true);
+	next_player_change = 0;
+	return next_player;
+
+	/*
 	(**iter).SetNowTurn(false);
 	if (next_player_change >= 0) {
 		for (int i = 0; i < next_player_change; i++, ++iter);
@@ -74,6 +90,7 @@ DPITER& TurnSystem::NextPlayer(DPITER& iter) {
 	now_player_loc += next_player_change;
 	next_player_change = 0;
 	return iter;
+	*/
 }
 
 
@@ -94,7 +111,21 @@ void TurnSystem::PlayDefault() {
 	SetNextPlayerChange(1 * dir);
 }
 
+
+void TurnSystem::RemoveNow() {
+	if (dir == Direction::ANTICLOCKWISE) {
+		now_player_loc;
+	}
+	max_player_num--;
+
+}
+
+
 void TurnSystem::SetNextPlayerChange(int num) {
+
+	next_player_change = num;
+
+	/*
 	if (next_player_change != 0)
 		throw "TurnSystem::SetNextPlayerChange - Notice trying to change Next Player Location twice in one turn";
 
@@ -104,4 +135,5 @@ void TurnSystem::SetNextPlayerChange(int num) {
 		SetNextPlayerChange(num - max_player_num);
 	else
 		next_player_change = num;
+		*/
 }

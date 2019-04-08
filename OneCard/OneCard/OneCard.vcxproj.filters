@@ -22,6 +22,9 @@
     <Filter Include="헤더 파일\Controller">
       <UniqueIdentifier>{0319c602-0a9b-474c-be8b-7a7ac97d7101}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\Utility">
+      <UniqueIdentifier>{bbf7bc09-9c9e-4f00-856d-cb261f16e80c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -74,14 +77,20 @@
     <ClInclude Include="ViewController.h">
       <Filter>헤더 파일\View</Filter>
     </ClInclude>
-    <ClInclude Include="Screen.h">
-      <Filter>헤더 파일\View</Filter>
-    </ClInclude>
     <ClInclude Include="TurnSystem.h">
       <Filter>헤더 파일\Controller</Filter>
     </ClInclude>
+    <ClInclude Include="RuleConfig.h">
+      <Filter>헤더 파일\Model</Filter>
+    </ClInclude>
     <ClInclude Include="Timer.h">
-      <Filter>헤더 파일\Controller</Filter>
+      <Filter>헤더 파일\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Screen.h">
+      <Filter>헤더 파일\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="CircularNode.h">
+      <Filter>헤더 파일\Utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

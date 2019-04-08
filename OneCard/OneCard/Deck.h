@@ -17,6 +17,7 @@ private:
 public:
 	Deck(IGetStack& field);
 	void Shuffle();
+	void AddCard(const Card* c);
 	const Card* DrawTop();
 	void Print(int x, int y) const;
 
@@ -51,6 +52,12 @@ void Deck::Shuffle() {
 		ptr_used_stack->pop();
 	}
 	delete ptr_used_stack;
+	RandomizeDeck();
+}
+
+
+void Deck::AddCard(const Card* c) {
+	card_deck.push_back(c);
 	RandomizeDeck();
 }
 

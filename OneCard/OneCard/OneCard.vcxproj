@@ -125,12 +125,14 @@
     <ClInclude Include="Card.h" />
     <ClInclude Include="CardConfig.h" />
     <ClInclude Include="CardFactory.h" />
+    <ClInclude Include="CircularNode.h" />
     <ClInclude Include="ConsoleConfig.h" />
     <ClInclude Include="Deck.h" />
     <ClInclude Include="Field.h" />
     <ClInclude Include="GameController.h" />
     <ClInclude Include="IDrawTop.h" />
     <ClInclude Include="IGetStack.h" />
+    <ClInclude Include="RuleConfig.h" />
     <ClInclude Include="Screen.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="ViewController.h" />

@@ -1,4 +1,18 @@
 ﻿  main.cpp
-c:\users\sec\desktop\github\precardgame\onecard\onecard\screen.h(62): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
-c:\users\sec\desktop\github\precardgame\onecard\onecard\timer.h(39): warning C4244: '초기화 중': '__int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sec\desktop\github\precardgame\onecard\onecard\screen.h(69): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
+c:\users\sec\desktop\github\precardgame\onecard\onecard\timer.h(37): warning C4244: '초기화 중': '__int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sec\desktop\github\precardgame\onecard\onecard\circularnode.h(17): warning C4812: 사용되지 않는 선언 스타일입니다. 대신 'CircularNode<T>::CircularNode'을(를) 사용하십시오.
+c:\users\sec\desktop\github\precardgame\onecard\onecard\circularnode.h(17): warning C4812: 사용되지 않는 선언 스타일입니다. 대신 'CircularNode<Player *>::CircularNode'을(를) 사용하십시오.
+  c:\users\sec\desktop\github\precardgame\onecard\onecard\circularnode.h(17): note: 클래스 템플릿 멤버 함수 'CircularNode<Player *>::CircularNode(T)'을(를) 컴파일하고 있습니다.
+          with
+          [
+              T=Player *
+          ]
+  c:\users\sec\desktop\github\precardgame\onecard\onecard\gamecontroller.h(98): note: 컴파일 중인 함수 템플릿 인스턴스화 'CircularNode<Player *>::CircularNode(T)'에 대한 참조를 확인하십시오.
+          with
+          [
+              T=Player *
+          ]
+  c:\users\sec\desktop\github\precardgame\onecard\onecard\turnsystem.h(67): note: 컴파일 중인 클래스 템플릿 인스턴스화 'CircularNode<Player *>'에 대한 참조를 확인하세요.
+c:\users\sec\desktop\github\precardgame\onecard\onecard\gamecontroller.h(272): warning C4715: 'GameController::CheckEnd': 모든 제어 경로에서 값을 반환하지는 않습니다.
   OneCard.vcxproj -> C:\Users\sec\Desktop\Github\PreCardGame\OneCard\Debug\OneCard.exe

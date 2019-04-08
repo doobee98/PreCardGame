@@ -3,17 +3,15 @@
 #include "IPrint.h"
 using namespace std::chrono;
 
-enum { BASE_TIMER = 10 };
-
 
 class Timer : public IPrint {
 private:
 	system_clock::time_point start;
 	bool active;
-	const int setting_timer;
+	const unsigned int setting_timer;
 
 public:
-	Timer();
+	Timer(unsigned int t);
 	void ResetTimer();
 	int GetTimerBySec() const;
 	void SetInactive();
@@ -23,7 +21,7 @@ public:
 
 
 
-Timer::Timer() : start(system_clock::now()), active(false), setting_timer(BASE_TIMER) {
+Timer::Timer(unsigned int t) : start(system_clock::now()), active(false), setting_timer(t) {
 
 }
 

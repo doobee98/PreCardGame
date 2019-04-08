@@ -1,6 +1,11 @@
 #pragma once
 #include <Windows.h>
 
+/*
+	Be Copied by "https://huiyu.tistory.com/entry/C%EC%96%B8%EC%96%B4%EB%A1%9C-%EA%B2%8C%EC%9E%84%EB%A7%8C%EB%93%A4%EA%B8%B0-3-%EB%A0%8C%EB%8D%94%EB%A7%81-%EA%B8%B0%EB%8A%A5-%EA%B5%AC%ED%98%84"
+	2doo modify a little.
+*/
+
 
 namespace Screen {
 	int g_nScreenIndex;
@@ -49,6 +54,8 @@ void Screen::ScreenClear()
 	GetConsoleScreenBufferInfo(g_hScreen[g_nScreenIndex], &info);
 
 	FillConsoleOutputCharacter(g_hScreen[g_nScreenIndex], ' ', size, Coor, &dw);
+	
+	//modified (added because of need for reset color)
 	FillConsoleOutputAttribute(g_hScreen[g_nScreenIndex], info.wAttributes, size, Coor, &dw);
 }
 
